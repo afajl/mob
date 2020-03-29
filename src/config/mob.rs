@@ -27,7 +27,7 @@ impl Config {
         File::open(MOB_FILE)
             .map_err(Error::from)
             .and_then(|f| serde_yaml::from_reader(f).map_err(Error::from))
-            .context(format!("failed to open {}", MOB_FILE))
+            .context(format!("failed to load {}", MOB_FILE))
     }
 
     fn save(&self) -> Result<()> {
