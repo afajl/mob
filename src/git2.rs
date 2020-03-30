@@ -1,5 +1,5 @@
 use anyhow::Result;
-use git2::{Config, Error, Repository, Signature};
+use git2::{Config, Error, Oid, Repository, Signature};
 use serde::Serialize;
 use std::env;
 
@@ -26,13 +26,29 @@ impl Git {
         let tree = self.repo.find_tree(tree)?;
         println!("get signature");
         let signature = Git::get_signature()?;
+
+        let parent = self
+            .repo
+            .find_reference("refs/heads/mob-meta")
+            .and_then(|reference| reference.resolve())
+            .and_then(|reference| {
+                self.repo
+                    .find_commit(reference.target().unwrap_or(Oid::zero()))
+            })
+            .ok();
+
+        let parent = match parent {
+            Some(ref commit) => vec![commit],
+            None => vec![],
+        };
+
         self.repo.commit(
             Some("refs/heads/mob-meta"),
             &signature,
             &signature,
             "save",
             &tree,
-            &[],
+            parent.as_slice(),
         )?;
         Ok(())
     }
