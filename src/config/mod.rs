@@ -20,8 +20,8 @@ impl<'a> Config<'a> {
             mob_branch: mob.mob_branch.as_str(),
             base_branch: mob.base_branch.as_str(),
             remote: mob.remote.as_str(),
-            remote_base_branch: remote_base_branch,
-            remote_mob_branch: remote_mob_branch,
+            remote_base_branch,
+            remote_mob_branch,
         }
     }
 }

@@ -1,0 +1,18 @@
+[package]
+name = "mobr"
+version = "0.1.0"
+authors = ["Paul <p@afajl.com>"]
+edition = "2018"
+
+[dependencies]
+chrono = "0.4"
+clap = { git = "https://github.com/clap-rs/clap/" }
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.8"
+serde_json = "1.0"
+log = "0.4"
+anyhow = "1.0"
+thiserror = "1.0"
+pretty_env_logger = "0.4"
+dialoguer = "0.5"
+git2 = "0.13"

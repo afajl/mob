@@ -159,7 +159,9 @@ impl<'name> Command<'name> {
     where
         S: AsRef<OsStr>,
     {
-        let output = self.command(args).output()?;
+        let mut cmd = self.command(args);
+        log::debug!("{:?}", cmd);
+        let output = cmd.output()?;
 
         let output = Output {
             status: output.status,

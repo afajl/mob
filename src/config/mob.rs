@@ -62,6 +62,7 @@ impl Config {
             .default("mob-session".to_string())
             .interact()?;
 
+        // TODO: default to current branch
         let base_branch = Input::new()
             .with_prompt("Base branch")
             .default("master".to_string())

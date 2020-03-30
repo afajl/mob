@@ -3,6 +3,7 @@ use crate::os;
 use anyhow::Result;
 use log;
 use std::path::PathBuf;
+use std::process;
 
 pub struct Git {
     command: command::Command<'static>,
