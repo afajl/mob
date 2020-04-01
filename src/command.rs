@@ -1,6 +1,6 @@
 //! Helper to run external commands.
 
-use anyhow::{bail, Error};
+use anyhow::Error;
 use std::borrow::Cow;
 use std::ffi::OsStr;
 use std::fmt;
@@ -91,18 +91,18 @@ impl<'name> Command<'name> {
     }
 
     /// Run the given command, return all lines printed to stdout on success.
-    pub fn run_lines<S>(&self, args: impl IntoIterator<Item = S>) -> Result<Vec<String>, Error>
-    where
-        S: AsRef<OsStr>,
-    {
-        let lines = self
-            .run_stdout(args)?
-            .split('\n')
-            .map(|s| s.to_string())
-            .collect();
+    // pub fn run_lines<S>(&self, args: impl IntoIterator<Item = S>) -> Result<Vec<String>, Error>
+    // where
+    //     S: AsRef<OsStr>,
+    // {
+    //     let lines = self
+    //         .run_stdout(args)?
+    //         .split('\n')
+    //         .map(|s| s.to_string())
+    //         .collect();
 
-        Ok(lines)
-    }
+    //     Ok(lines)
+    // }
 
     /// Run the given command, return a string of all output.
     pub fn run_stdout<S>(&self, args: impl IntoIterator<Item = S>) -> Result<String, Error>
@@ -136,23 +136,23 @@ impl<'name> Command<'name> {
     ///
     /// This is discouraged, since it basically requires the command to be running on the main
     /// thread.
-    pub fn run_inherited<S>(&self, args: impl IntoIterator<Item = S>) -> Result<(), Error>
-    where
-        S: AsRef<OsStr>,
-    {
-        let mut cmd = self.command(args);
-        let status = cmd.status()?;
+    // pub fn run_inherited<S>(&self, args: impl IntoIterator<Item = S>) -> Result<(), Error>
+    // where
+    //     S: AsRef<OsStr>,
+    // {
+    //     let mut cmd = self.command(args);
+    //     let status = cmd.status()?;
 
-        if !status.success() {
-            bail!(
-                "Command exited with non-zero status: {:?}: {:?}",
-                cmd,
-                status
-            );
-        }
+    //     if !status.success() {
+    //         bail!(
+    //             "Command exited with non-zero status: {:?}: {:?}",
+    //             cmd,
+    //             status
+    //         );
+    //     }
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
     /// Run the given command, return a string of all output.
     pub fn run<S>(&self, args: impl IntoIterator<Item = S>) -> Result<Output, io::Error>

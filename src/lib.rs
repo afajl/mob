@@ -1,7 +1,9 @@
 mod command;
 pub mod config;
 pub mod git;
-pub mod git2;
 mod os;
+
+#[cfg(test)]
+mod test;
 
 pub use crate::config::*;

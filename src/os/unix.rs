@@ -4,11 +4,6 @@ use anyhow::Error;
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 
-/// Convert into an executable path.
-pub fn exe_path(path: PathBuf) -> PathBuf {
-    path
-}
-
 /// Convert the given command into a path.
 ///
 /// This adds the platform-specific extension for Windows.

@@ -7,9 +7,8 @@ use mobr::{git, mob, Config};
 #[derive(Clap)]
 #[clap(version = "1.0", author = "Paul")]
 struct Opts {
-    #[clap(long = "dry-run")]
-    dry_run: bool,
-
+    // #[clap(long = "dry-run")]
+    // dry_run: bool,
     #[clap(subcommand)]
     subcmd: SubCommand,
 }
@@ -29,12 +28,7 @@ fn main() -> Result<()> {
     pretty_env_logger::init();
     let opts: Opts = Opts::parse();
 
-    let git = git::Git::new(opts.dry_run);
-
-    let project_root = git.root_dir()?;
-    if std::env::current_dir()? != project_root {
-        std::env::set_current_dir(project_root)?;
-    }
+    let git = git::Git::new(None)?;
 
     if let SubCommand::Init = opts.subcmd {
         return init();
