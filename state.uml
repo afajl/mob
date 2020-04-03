@@ -1,0 +1,14 @@
+
+@startuml
+
+[*] --> Stopped
+hide empty description
+Stopped --> Working: mob start (StartInitial)
+Working --> WaitingForNext: mob next (Next)
+Working --> Break: mob next (TakeBreak)
+Break: until
+Break --> WaitingForNext: timer done (BreakOver)
+WaitingForNext --> Stopped: mob done (Done)
+WaitingForNext --> Working: mob start (Start)
+Working --> Stopped: mob done (Done)
+@enduml

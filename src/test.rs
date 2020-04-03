@@ -1,4 +1,8 @@
-use git2::Repository;
+use git2::{
+    build::{CheckoutBuilder, CloneLocal, RepoBuilder},
+    Repository,
+};
+use std::path::Path;
 use tempfile::TempDir;
 
 pub fn repo_init() -> (TempDir, Repository) {
@@ -16,5 +20,19 @@ pub fn repo_init() -> (TempDir, Repository) {
         repo.commit(Some("HEAD"), &sig, &sig, "initial", &tree, &[])
             .unwrap();
     }
+    (td, repo)
+}
+
+pub fn repo_clone(from: &Path) -> (TempDir, Repository) {
+    let td = TempDir::new().unwrap();
+
+    let co = CheckoutBuilder::new();
+
+    let repo = RepoBuilder::new()
+        .with_checkout(co)
+        .clone_local(CloneLocal::Local)
+        .remote_create(|repo, _name, url| repo.remote("origin", url))
+        .clone(from.to_str().unwrap(), td.path())
+        .unwrap();
     (td, repo)
 }

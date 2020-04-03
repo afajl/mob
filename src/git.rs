@@ -1,6 +1,8 @@
 use crate::command;
 use crate::os;
-use anyhow::{Context, Result};
+use crate::store;
+use crate::store::Store;
+use anyhow::Result;
 use git2::{Commit, Config, Error, Oid, Repository, Signature};
 use log;
 use serde::{de::DeserializeOwned, Serialize};
@@ -36,9 +38,10 @@ impl Git {
 
     pub fn run(&self, args: &[&str]) -> Result<()> {
         log::debug!("run: git {}", args.join(" "));
-        if self.dry_run {
-            return Ok(());
-        }
+        println!("run: git {}", args.join(" "));
+        // if self.dry_run {
+        //     return Ok(());
+        // }
         self.command.run_checked(args)
     }
 
@@ -70,18 +73,21 @@ impl Git {
     }
 }
 
-impl Git {
-    pub fn save_meta<T: ?Sized>(&self, name: &str, data: &T) -> Result<()>
+pub const MOB_META_BRANCH: &str = "mob-meta";
+
+impl Store for Git {
+    fn save<T: ?Sized>(&self, name: &str, data: &T) -> Result<(), store::Error>
     where
         T: Serialize,
     {
         let json = serde_json::to_vec(data)?;
+
         let oid = self.repo.blob(json.as_slice())?;
+
         let mut tree = self.repo.treebuilder(None)?;
         tree.insert(name, oid, 0o100644)?;
         let tree = tree.write()?;
         let tree = self.repo.find_tree(tree)?;
-        let signature = Git::get_signature()?;
 
         let parent = self.get_latest();
         let parent = match parent {
@@ -89,18 +95,26 @@ impl Git {
             None => vec![],
         };
 
+        let signature = Git::get_signature()?;
+
         self.repo.commit(
-            Some("refs/heads/mob-meta"),
+            Some(format!("refs/heads/{}", MOB_META_BRANCH).as_str()),
             &signature,
             &signature,
             "save",
             &tree,
             parent.as_slice(),
         )?;
-        Ok(())
+
+        self.run(&[
+            "push",
+            "origin",
+            format!("{}:{}", MOB_META_BRANCH, MOB_META_BRANCH).as_str(),
+        ])
+        .map_err(store::Error::Conflict)
     }
 
-    pub fn load_meta<T>(&self, name: &str) -> Result<Option<T>>
+    fn load<T>(&self, name: &str) -> Result<T, store::Error>
     where
         T: DeserializeOwned,
     {
@@ -108,7 +122,7 @@ impl Git {
 
         let commit = match commit {
             Some(commit) => commit,
-            None => return Ok(None),
+            None => return Err(store::Error::Missing),
         };
 
         let tree = commit.tree()?;
@@ -117,23 +131,25 @@ impl Git {
 
         let tree_entry = match tree_entry {
             Some(tree) => tree,
-            None => return Ok(None),
+            None => return Err(store::Error::Missing),
         };
 
         let object = tree_entry.to_object(&self.repo)?;
         let blob = object.as_blob();
         let blob = match blob {
             Some(blob) => blob,
-            None => return Ok(None),
+            None => return Err(store::Error::Missing),
         };
         let blob = blob.content();
 
-        serde_json::from_slice(blob).context("failed to deserialize")
+        serde_json::from_slice(blob).map_err(store::Error::Format)
     }
+}
 
+impl Git {
     fn get_latest(&self) -> Option<Commit> {
         self.repo
-            .find_reference("refs/heads/mob-meta")
+            .find_reference(format!("refs/heads/{}", MOB_META_BRANCH).as_str())
             .and_then(|reference| reference.resolve())
             .and_then(|reference| {
                 self.repo
@@ -155,6 +171,13 @@ mod tests {
     use super::*;
     use serde::{Deserialize, Serialize};
     use std::panic;
+    use tempfile::TempDir;
+
+    fn get_repo() -> (TempDir, TempDir, Git) {
+        let (origin_dir, _) = crate::test::repo_init();
+        let (clone_dir, clone_repo) = crate::test::repo_clone(origin_dir.path());
+        (origin_dir, clone_dir, Git::from_repo(clone_repo))
+    }
 
     #[derive(Debug, Serialize, Deserialize)]
     pub struct TestData {
@@ -163,48 +186,72 @@ mod tests {
 
     #[test]
     fn create_and_read_meta() {
-        let (_td, repo) = crate::test::repo_init();
-        let git = Git::from_repo(repo);
+        let (_od, _cd, git) = get_repo();
         let data = "data".to_string();
-        git.save_meta("meta", &data).expect("could not save data");
-        let got: String = git.load_meta("meta").expect("could not load data").unwrap();
+        git.save("meta", &data).expect("could not save data");
+        let got = git.load::<String>("meta").expect("could not load data");
         assert_eq!(got, data)
     }
 
     #[test]
     fn missing_meta_ok() {
-        let (_td, repo) = crate::test::repo_init();
-        let git = Git::from_repo(repo);
-        let got: Option<String> = git.load_meta("meta").expect("could not load data");
-        assert!(got.is_none())
+        let (_od, _cd, git) = get_repo();
+        let err = git.load::<String>("meta").unwrap_err();
+        match err {
+            store::Error::Missing => {}
+            _ => panic!("Expected missing"),
+        }
     }
 
     #[test]
     fn corrupt_meta_is_error() {
-        let (_td, repo) = crate::test::repo_init();
-        let git = Git::from_repo(repo);
+        let (_od, _cd, git) = get_repo();
 
         let data = vec![1, 2, 3];
-        git.save_meta("meta", &data).expect("could not save data");
-        let res: Result<Option<String>> = git.load_meta("meta");
-        assert!(res.is_err())
+        git.save("meta", &data).expect("could not save data");
+
+        let err = git.load::<String>("meta").unwrap_err();
+
+        match err {
+            store::Error::Format(_) => {}
+            _ => panic!("Expected format error"),
+        }
     }
 
     #[test]
     fn latest_meta_loaded() {
-        let (_td, repo) = crate::test::repo_init();
-        let git = Git::from_repo(repo);
+        let (_od, _cd, git) = get_repo();
+
         let data = TestData {
             v: "first".to_string(),
         };
-        git.save_meta("meta", &data).expect("could not save data");
+        git.save("meta", &data).expect("could not save data");
 
         let data = TestData {
             v: "second".to_string(),
         };
-        git.save_meta("meta", &data).expect("could not save data");
+        git.save("meta", &data).expect("could not save data");
 
-        let got: TestData = git.load_meta("meta").expect("could not load data").unwrap();
+        let got: TestData = git.load("meta").expect("could not load data");
         assert_eq!(got.v, data.v)
+    }
+
+    #[test]
+    fn push_conflict() {
+        let (origin, _) = crate::test::repo_init();
+        let (_clone1, clonerepo1) = crate::test::repo_clone(origin.path());
+        let (_clone2, clonerepo2) = crate::test::repo_clone(origin.path());
+
+        let git1 = Git::from_repo(clonerepo1);
+        let data = "first state".to_string();
+        git1.save("test", &data).unwrap();
+
+        let git2 = Git::from_repo(clonerepo2);
+        let data = "second state".to_string();
+        let err = git2.save("test", &data).unwrap_err();
+        match err {
+            store::Error::Conflict(_) => {}
+            _ => panic!("Pushing to remote twice should result in conflict"),
+        }
     }
 }
