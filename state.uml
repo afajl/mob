@@ -7,7 +7,7 @@ Stopped --> Working: mob start (StartInitial)
 Working --> WaitingForNext: mob next (Next)
 Working --> Break: mob next (TakeBreak)
 Break: until
-Break --> WaitingForNext: timer done (BreakOver)
+Break --> WaitingForNext: timer done
 WaitingForNext --> Stopped: mob done (Done)
 WaitingForNext --> Working: mob start (Start)
 Working --> Stopped: mob done (Done)

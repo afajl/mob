@@ -54,35 +54,24 @@ impl Settings {
     }
 }
 
-pub struct Service<'a, S>
-where
-    S: store::Store,
-{
-    store: &'a S,
+const STORE_KEY: store::Key = store::Key::Settings;
+
+pub trait Service {
+    fn load(&self) -> Result<Settings>;
 }
 
-const CONFIG_NAME: &str = "mob-config";
+pub struct StoreService<'a> {
+    store: &'a dyn store::Store<Settings>,
+}
 
-impl<'a, S> Service<'a, S>
-where
-    S: store::Store,
-{
-    pub fn new(store: &'a S) -> Self {
-        Service { store }
-    }
-
-    pub fn load(&self) -> Result<Settings> {
-        let res = self.store.load(CONFIG_NAME);
-        match res {
-            Ok(config) => Ok(config),
-            Err(store::Error::Missing) => self.ask_to_create(),
-            Err(error) => Err(Error::from(error)),
-        }
+impl<'a> StoreService<'a> {
+    pub fn new(store: &'a impl store::Store<Settings>) -> Self {
+        StoreService { store }
     }
 
     fn save_retry(&self, config: &Settings) -> Result<()> {
         loop {
-            match self.store.save(CONFIG_NAME, &config) {
+            match self.store.save(STORE_KEY, &config) {
                 Ok(_) => return Ok(()),
                 Err(store::Error::Conflict(error)) => {
                     println!("Saving config failed: {}", error);
@@ -114,6 +103,17 @@ where
                 Ok(c)
             }
             false => Err(Error::from(store::Error::Missing)),
+        }
+    }
+}
+
+impl<'a> Service for StoreService<'a> {
+    fn load(&self) -> Result<Settings> {
+        let res = self.store.load(STORE_KEY);
+        match res {
+            Ok(config) => Ok(config),
+            Err(store::Error::Missing) => self.ask_to_create(),
+            Err(error) => Err(Error::from(error)),
         }
     }
 }

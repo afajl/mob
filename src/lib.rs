@@ -1,10 +1,11 @@
+pub mod cmd;
 mod command;
 pub mod config;
 pub mod git;
 mod os;
-mod store;
+pub mod session;
+pub mod settings;
+pub mod store;
 
 #[cfg(test)]
 mod test;
-
-pub use crate::config::*;
