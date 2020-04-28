@@ -1,11 +1,13 @@
+use crate::git::{Git, GitCommand};
 use git2::{
     build::{CheckoutBuilder, CloneLocal, RepoBuilder},
-    Repository,
+    BranchType, Repository,
 };
+use std::cell::RefCell;
 use std::path::Path;
 use tempfile::TempDir;
 
-pub fn repo_init() -> (TempDir, Repository) {
+pub fn new_repo() -> (TempDir, Repository) {
     let td = TempDir::new().unwrap();
     let repo = Repository::init(td.path()).unwrap();
     {
@@ -23,7 +25,13 @@ pub fn repo_init() -> (TempDir, Repository) {
     (td, repo)
 }
 
-pub fn repo_clone(from: &Path) -> (TempDir, Repository) {
+pub fn new_bare_repo() -> (TempDir, Repository) {
+    let td = TempDir::new().unwrap();
+    let repo = Repository::init_bare(td.path()).unwrap();
+    (td, repo)
+}
+
+pub fn clone_repo(from: &Path) -> (TempDir, Repository) {
     let td = TempDir::new().unwrap();
 
     let co = CheckoutBuilder::new();
@@ -35,4 +43,35 @@ pub fn repo_clone(from: &Path) -> (TempDir, Repository) {
         .clone(from.to_str().unwrap(), td.path())
         .unwrap();
     (td, repo)
+}
+
+pub fn new_git<'repo>() -> ((TempDir, TempDir), GitCommand<'repo>) {
+    let (origin_dir, _) = crate::test::new_repo();
+    let (clone_dir, clone_repo) = crate::test::clone_repo(origin_dir.path());
+    ((origin_dir, clone_dir), GitCommand::from_repo(clone_repo))
+}
+
+pub struct MockGit {
+    pub commands: RefCell<Vec<String>>,
+}
+
+impl MockGit {
+    pub fn new() -> Self {
+        Self {
+            commands: RefCell::new(vec![]),
+        }
+    }
+}
+
+impl Git for MockGit {
+    fn run(&self, args: &[&str]) -> anyhow::Result<()> {
+        self.commands.borrow_mut().push(args.join(" ").to_string());
+        Ok(())
+    }
+    fn tree_is_clean(&self) -> anyhow::Result<bool> {
+        unimplemented!()
+    }
+    fn has_branch(&self, _branch: &str) -> anyhow::Result<bool> {
+        Ok(false)
+    }
 }

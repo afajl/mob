@@ -160,7 +160,6 @@ impl<'name> Command<'name> {
         S: AsRef<OsStr>,
     {
         let mut cmd = self.command(args);
-        log::debug!("{:?}", cmd);
         let output = cmd.output()?;
 
         let output = Output {
