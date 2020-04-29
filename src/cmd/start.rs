@@ -122,7 +122,7 @@ impl<'a> Start<'a> {
                 driver: self.config.name.clone(),
             },
             last_break: self.maybe_reset_break(session.last_break),
-            drivers: session.drivers.add(self.config.name.as_str()),
+            drivers: session.drivers.insert(self.config.name.as_str()),
             ..session
         };
 
@@ -201,10 +201,9 @@ impl<'a> Start<'a> {
                 driver: self.config.name.clone(),
             },
             last_break: self.maybe_reset_break(session.last_break),
-            drivers: session.drivers.add(&self.config.name.as_str()),
+            drivers: session.drivers.insert(&self.config.name.as_str()),
             settings: Some(settings),
             branches,
-            ..session
         };
 
         self.store.save(&session)?;

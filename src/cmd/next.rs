@@ -147,7 +147,7 @@ impl<'a> Next<'a> {
             }
         }
 
-        return Ok(None);
+        Ok(None)
     }
 }
 

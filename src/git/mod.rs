@@ -113,7 +113,7 @@ impl<'repo> GitCommand<'repo> {
                 }
             }
         }
-        return Ok(None);
+        Ok(None)
     }
 
     fn run_quietly(&self, args: &[&str]) -> Result<()> {

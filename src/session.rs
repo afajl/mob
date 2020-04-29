@@ -4,7 +4,7 @@ use chrono::NaiveTime;
 use chrono::{DateTime, Utc};
 use dialoguer::Input;
 use serde::{Deserialize, Serialize};
-use std::default;
+use std::default::Default;
 
 const TIME_FORMAT: &str = "%H:%M";
 
@@ -24,7 +24,7 @@ pub struct Settings {
     pub lunch_end: String,
 }
 
-impl default::Default for Settings {
+impl Default for Settings {
     fn default() -> Self {
         Self {
             commit_message: "mob synk [skip ci]".into(),
@@ -116,7 +116,7 @@ impl Branches {
     }
 }
 
-impl default::Default for Branches {
+impl Default for Branches {
     fn default() -> Self {
         Self {
             base_branch: "master".to_string(),
@@ -129,7 +129,7 @@ impl default::Default for Branches {
 pub struct Drivers(Vec<String>);
 
 impl Drivers {
-    pub fn add(mut self, name: &str) -> Self {
+    pub fn insert(mut self, name: &str) -> Self {
         if !self.0.contains(&name.to_string()) {
             self.0.push(name.to_string())
         }
@@ -166,7 +166,7 @@ impl Drivers {
     }
 }
 
-impl default::Default for Drivers {
+impl Default for Drivers {
     fn default() -> Self {
         Drivers(vec![])
     }
@@ -189,7 +189,7 @@ pub struct Session {
     pub state: State,
 }
 
-impl default::Default for Session {
+impl Default for Session {
     fn default() -> Self {
         Self {
             last_break: Utc::now(),

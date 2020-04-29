@@ -1,8 +1,8 @@
 use super::*;
 use crate::session::Session;
 
-const SESSION_FILENAME: &'static str = "data";
-const SESSION_HEAD: &'static str = "mob-meta";
+const SESSION_FILENAME: &str = "data";
+const SESSION_HEAD: &str = "mob-meta";
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
