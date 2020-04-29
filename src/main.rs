@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap;
 use clap::Clap;
 use log;
-use mobr::{cmd, config, emoji_logger, git, session, session::Store, timer};
+use mob::{cmd, config, emoji_logger, git, session, session::Store, timer};
 
 #[derive(Clap)]
 #[clap(version = "1.0", author = "Paul")]
@@ -29,7 +29,7 @@ enum SubCommand {
 
     /// Finish turn and sync repo
     #[clap(name = "next")]
-    Next(cmd::NextOpts),
+    Next,
 
     /// Stop session
     #[clap(name = "done")]
@@ -43,6 +43,7 @@ fn main() -> Result<()> {
     let config = config::load()?;
 
     let timer = timer::ConsoleTimer::new(config.commands());
+    // timer.start("My title", chrono::Duration::seconds(63), "message")?;
     let git = git::GitCommand::new(None, config.remote.clone())?;
     let store = session::SessionStore::new(&git);
 
@@ -50,7 +51,7 @@ fn main() -> Result<()> {
 
     match opts.subcmd {
         SubCommand::Start(opts) => cmd::Start::new(&git, &store, &timer, opts, config).run()?,
-        SubCommand::Next(opts) => cmd::Next::new(&git, &store, &timer, opts, config).run()?,
+        SubCommand::Next => cmd::Next::new(&git, &store, &timer, config).run()?,
         SubCommand::Done => cmd::Done::new(&git, &store, config).run()?,
         SubCommand::Clean => store.clean()?,
         SubCommand::Status => {

@@ -27,7 +27,7 @@ pub trait Store {
 
 impl<'repo> Store for GitCommand<'repo> {
     fn save(&self, data: &Session) -> Result<(), store::Error> {
-        let json = serde_json::to_vec(data)?;
+        let json = serde_json::to_vec_pretty(data)?;
 
         let filename = SESSION_FILENAME;
 

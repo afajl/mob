@@ -1,8 +1,9 @@
 use anyhow::Result;
 use confy;
-use dialoguer::Input;
+use dialoguer::{Confirmation, Input};
 use directories::UserDirs;
 use serde::{Deserialize, Serialize};
+use std::default::Default;
 use std::path;
 
 const CONFIG_FILE: &str = ".mob";
@@ -11,8 +12,8 @@ const CONFIG_FILE: &str = ".mob";
 pub struct Config {
     pub name: String,
     pub remote: String,
-    pub say_command: String,
-    pub notify_command: String,
+    pub say_command: Option<String>,
+    pub notify_command: Option<String>,
 }
 
 impl Config {
@@ -32,15 +33,37 @@ impl Config {
             .default(default.remote)
             .interact()?;
 
-        let say_command = Input::new()
-            .with_prompt("Command to say something on your computer (empty input will disable)")
-            .default(default.say_command)
+        let use_say_comand = Confirmation::new()
+            .with_text("Do you want to use speech synthesis for prompts?")
+            .default(true)
             .interact()?;
 
-        let notify_command = Input::new()
-            .with_prompt("Command to notify you (empty input will disable)")
-            .default(default.notify_command)
+        let say_command = if use_say_comand {
+            Some(
+                Input::new()
+                    .with_prompt("Command to say something on your computer")
+                    .default(default.say_command.unwrap())
+                    .interact()?,
+            )
+        } else {
+            None
+        };
+
+        let use_notify_command = Confirmation::new()
+            .with_text("Do you want to show desktop notifications?")
+            .default(true)
             .interact()?;
+
+        let notify_command = if use_notify_command {
+            Some(
+                Input::new()
+                    .with_prompt("Command to notify you (empty input will disable)")
+                    .default(default.notify_command.unwrap())
+                    .interact()?,
+            )
+        } else {
+            None
+        };
 
         Ok(Config {
             name,
@@ -50,23 +73,21 @@ impl Config {
         })
     }
     pub fn commands(&self) -> Vec<String> {
-        // TODO there must be a better way than cloning twice
-        return [self.say_command.clone(), self.notify_command.clone()]
-            .iter()
-            .filter(|c| c.len() > 0)
-            .map(|c| c.clone())
-            .collect();
+        vec![self.say_command.clone(), self.notify_command.clone()]
+            .into_iter()
+            .flatten()
+            .collect()
     }
 }
 
-impl ::std::default::Default for Config {
+impl Default for Config {
     fn default() -> Self {
         Self {
             //name: whoami::user(),
             name: "".to_string(),
             remote: "origin".to_string(),
-            say_command: "say 'MESSAGE'".into(),
-            notify_command: "/usr/bin/osascript -e 'display notification \"MESSAGE\"'".into(),
+            say_command: Some("say 'MESSAGE'".into()),
+            notify_command: Some("/usr/bin/osascript -e 'display notification \"MESSAGE\"'".into()),
         }
     }
 }

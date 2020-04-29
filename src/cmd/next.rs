@@ -1,20 +1,12 @@
 use crate::{config::Config, git, session, timer};
 use anyhow::Result;
 use chrono::{Duration, Local, NaiveTime, Utc};
-use clap::{self, Clap};
 use session::State;
-
-#[derive(Clap, Debug)]
-pub struct NextOpts {
-    #[clap(short = "q")]
-    quiet: bool,
-}
 
 pub struct Next<'a> {
     git: &'a dyn git::Git,
     store: &'a dyn session::Store,
     timer: &'a dyn timer::Timer,
-    opts: NextOpts,
     config: Config,
 }
 
@@ -23,21 +15,18 @@ impl<'a> Next<'a> {
         git: &'a impl git::Git,
         store: &'a impl session::Store,
         timer: &'a impl timer::Timer,
-        opts: NextOpts,
         config: Config,
     ) -> Next<'a> {
         Self {
             git,
             store,
             timer,
-            opts,
             config,
         }
     }
 
     pub fn run(&self) -> Result<()> {
-        let _opts = &self.opts; //TODO REMOVE
-        let me = self.config.name.clone();
+        let me = &self.config.name;
 
         let session = self.store.load()?;
         match &session.state {
@@ -48,14 +37,16 @@ impl<'a> Next<'a> {
                 log::warn!("The current driver is {}", driver);
             }
             State::Working { .. } => self.next(session)?,
-            State::Break { next, .. } => {
+            State::Break { next } => {
                 match next {
-                    Some(name) => log::info!("Take a break. {} is next", name),
-                    None => log::info!("Take a break, then run start"),
+                    Some(name) if name == me.as_str() => log::info!("It's your turn. Run start"),
+                    Some(name) => log::info!("{} should run start", name),
+                    None => log::info!("Run start"),
                 };
             }
             State::WaitingForNext { next } => {
                 match next {
+                    Some(name) if name == me.as_str() => log::info!("It's your turn. Run start"),
                     Some(name) => log::info!("Waiting for {} to start", name),
                     None => log::info!("Waiting for someone to run start"),
                 };

@@ -1,5 +1,5 @@
 [package]
-name = "mobr"
+name = "mob"
 version = "0.1.0"
 authors = ["Paul <p@afajl.com>"]
 edition = "2018"

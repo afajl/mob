@@ -42,7 +42,7 @@ impl<'a> Start<'a> {
     }
 
     pub fn run(&self) -> Result<()> {
-        let me = self.config.name.clone();
+        let me = &self.config.name;
 
         let mut session = self.store.load()?;
 
@@ -61,19 +61,15 @@ impl<'a> Start<'a> {
                     self.start(session)?
                 }
             }
-            State::Break {
-                next: Some(driver), ..
-            } if driver == me.as_str() => {
+            State::Break { next: Some(driver) } if driver == me.as_str() => {
                 session.last_break = Utc::now();
                 self.start(session)?
             }
-            State::Break { next: None, .. } => {
+            State::Break { next: None } => {
                 session.last_break = Utc::now();
                 self.start(session)?
             }
-            State::Break {
-                next: Some(driver), ..
-            } => self.take_over(driver, session.clone())?,
+            State::Break { next: Some(driver) } => self.take_over(driver, session.clone())?,
             State::WaitingForNext { next: Some(driver) } if driver == me.as_str() => {
                 self.start(session)?
             }
@@ -239,7 +235,9 @@ impl<'a> Start<'a> {
             "Your turn",
             chrono::Duration::minutes(duration),
             timer_message.as_str(),
-        )
+        )?;
+        log::info!("Done. Run mob next");
+        Ok(())
     }
 }
 

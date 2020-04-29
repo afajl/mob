@@ -23,20 +23,23 @@ impl<'a> ConsoleTimer<'a> {
 }
 
 impl<'a> Timer for ConsoleTimer<'a> {
-    fn start(&self, title: &str, mut duration: chrono::Duration, message: &str) -> Result<()> {
+    fn start(&self, title: &str, duration: chrono::Duration, message: &str) -> Result<()> {
+        let mut time_left = duration.clone();
         let second = chrono::Duration::seconds(1);
 
         let term = Term::stdout();
         term.set_title(title);
-        term.write_line("")?;
-        while duration > chrono::Duration::zero() {
-            //term.clear_last_lines(1)?;
-            term.clear_last_lines(1)?;
-            //term.move_cursor_up(1)?;
-            let line = format!("{}: {}", title, format_duration(duration));
-            term.write_line(line.as_str())?;
+        println!("\n{}", title);
+        while time_left > chrono::Duration::zero() {
+            let formatted = format_duration(time_left);
+            let letters = asci_time(formatted.as_str());
+
+            if time_left != duration {
+                term.clear_last_lines(7)?;
+            }
+            print_ascii(&term, letters)?;
             thread::sleep(second.to_std()?);
-            duration = duration - second;
+            time_left = time_left - second;
         }
         term.clear_last_lines(1)?;
 
@@ -47,6 +50,35 @@ impl<'a> Timer for ConsoleTimer<'a> {
 
         Ok(())
     }
+}
+
+fn asci_time(time: &str) -> Vec<&str> {
+    time.chars()
+        .map(|c| {
+            let d = c as usize;
+            match d {
+                58 => FONT[10], // :
+                32 => FONT[11], // <space>
+                48..=57 => FONT[d - 48],
+                _ => panic!(format!("dont know what to do with '{}' {}", c, d)),
+            }
+        })
+        .collect()
+}
+
+fn print_ascii(term: &Term, letters: Vec<&str>) -> Result<()> {
+    let lines: Vec<String> = (0..7)
+        .map(|row| //for row in 0..5 {
+        letters
+            .iter()
+            .map(|l| l.split('\n').nth(row).unwrap())
+            .collect::<Vec<&str>>()
+            .join(" "))
+        .collect();
+    for line in lines {
+        term.write_line(line.as_str())?;
+    }
+    Ok(())
 }
 
 fn format_duration(duration: chrono::Duration) -> String {
@@ -63,82 +95,90 @@ fn format_duration(duration: chrono::Duration) -> String {
     }
 }
 
-// const FONT: [&str; 11] = [
-//     "
-//  ██████
-// ██  ████
-// ██ ██ ██
-// ████  ██
-//  ██████
-// ",
-//     "
-//  ██
-// ███
-//  ██
-//  ██
-//  ██
-// ",
-//     "
-// ██████
-//      ██
-//  █████
-// ██
-// ███████
-// ",
-//     "
-// ██████
-//      ██
-//  █████
-//      ██
-// ██████
-// ",
-//     "
-// ██   ██
-// ██   ██
-// ███████
-//      ██
-//      ██
-// ",
-//     "
-// ███████
-// ██
-// ███████
-//      ██
-// ███████
-// ",
-//     "
-//  ██████
-// ██
-// ███████
-// ██    ██
-//  ██████
-// ",
-//     "
-// ███████
-//      ██
-//     ██
-//    ██
-//    ██
-// ",
-//     "
-//  █████
-// ██   ██
-//  █████
-// ██   ██
-//  █████
-// ",
-//     "
-//  █████
-// ██   ██
-//  ██████
-//      ██
-//  █████
-// ",
-//     "
-
-// ██
-//
-// ██
-//
-// ",
-// ];
+#[rustfmt::skip]
+const FONT: [&str; 12] = [
+"
+  ██████ 
+ ██  ████
+ ██ ██ ██
+ ████  ██
+  ██████ 
+",
+"
+  ██
+ ███
+  ██
+  ██
+  ██
+ ",
+"
+ ██████ 
+      ██
+  █████ 
+ ██     
+ ███████
+",
+"
+ ██████ 
+      ██
+  █████ 
+      ██
+ ██████ 
+",
+"
+ ██   ██
+ ██   ██
+ ███████
+      ██
+      ██
+",
+"
+ ███████
+ ██     
+ ███████
+      ██
+ ███████
+",
+"
+  ██████ 
+ ██      
+ ███████ 
+ ██    ██
+  ██████ 
+",
+"
+ ███████
+      ██
+     ██ 
+    ██  
+    ██  
+",
+"
+  █████ 
+ ██   ██
+  █████ 
+ ██   ██
+  █████ 
+",
+"
+  █████ 
+ ██   ██
+  ██████
+      ██
+  █████ 
+",
+"
+   
+ ██
+   
+ ██
+   
+",
+"
+     
+     
+     
+     
+     
+",
+];
