@@ -52,13 +52,18 @@ impl<'a> Start<'a> {
                 log::warn!("It's already your turn");
             }
             State::Working { driver } => {
-                log::warn!("{} is already driving!", driver);
-                let take_over = dialoguer::Confirmation::new()
-                    .with_text("Do you want to take over with the risk of losing work?")
-                    .default(false)
+                log::warn!("{} has not run mob next", driver);
+                let selections = &["Retry", "Take turn with the risk of loosing work"];
+                let selection = dialoguer::Select::new()
+                    .with_prompt("What do you want to do?")
+                    .default(0)
+                    .items(&selections[..])
                     .interact()?;
-                if take_over {
-                    self.start(session)?
+
+                match selection {
+                    0 => return self.run(),
+                    1 => self.start(session)?,
+                    _ => panic!("impossible selection"),
                 }
             }
             State::Break { next: Some(driver) } if driver == me.as_str() => {

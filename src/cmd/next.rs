@@ -112,6 +112,13 @@ impl<'a> Next<'a> {
     fn take_break(&self, session: &session::Session) -> Result<Option<(&str, Duration)>> {
         let settings = session.settings.clone().unwrap();
 
+        log::trace!(
+            "Lunch parameters: now={}, lunch_start={}, work_duration={}",
+            Local::now().time(),
+            &settings.lunch_start,
+            &settings.work_duration
+        );
+
         let is_lunch = is_lunch_time(
             Local::now().time(),
             settings.work_duration,
@@ -128,6 +135,14 @@ impl<'a> Next<'a> {
                 return Ok(Some(("Lunch", duration)));
             }
         }
+
+        log::trace!(
+            "Break parameters: now={}, last_break={}, break_interval={}, work_duration={}",
+            Local::now().time(),
+            session.last_break,
+            settings.break_interval,
+            settings.work_duration
+        );
 
         let should_break = is_break_time(
             Utc::now(),

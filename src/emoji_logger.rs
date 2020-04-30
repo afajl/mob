@@ -32,7 +32,7 @@ fn level_style(style: &mut Style, level: Level) -> &'static str {
             "›"
         }
         Level::Info => {
-            style.set_color(Color::Black);
+            style.set_color(Color::Green);
             ">"
         }
         Level::Warn => {

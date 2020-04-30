@@ -74,4 +74,7 @@ impl Git for MockGit {
     fn has_branch(&self, _branch: &str) -> anyhow::Result<bool> {
         Ok(false)
     }
+    fn on_branch(&self, branch: &str) -> anyhow::Result<bool> {
+        todo!()
+    }
 }
