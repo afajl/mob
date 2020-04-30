@@ -8,3 +8,8 @@ test-repos:
 
 clean-repos:
 	rm -rf testrepos
+
+update:
+	git pull
+	cargo build
+	cp target/debug/mob /usr/local/bin
