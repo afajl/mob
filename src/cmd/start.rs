@@ -112,8 +112,12 @@ impl<'a> Start<'a> {
         self.git
             .run(&["checkout", session.branches.base_branch.as_str()])?;
         self.git.run(&["fetch", "--all", "--prune"])?;
-        self.git
-            .run(&["branch", "-D", session.branches.branch.as_str()])?;
+
+        if self.git.has_branch(session.branches.branch.as_str())? {
+            self.git
+                .run(&["branch", "-D", session.branches.branch.as_str()])?;
+        }
+
         self.git
             .run(&["checkout", session.branches.branch.as_str()])?;
 
