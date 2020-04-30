@@ -1,8 +1,13 @@
 [package]
 name = "mob"
 version = "0.1.0"
-authors = ["Paul <p@afajl.com>"]
+authors = ["Paul Diaconescu <p@afajl.com>"]
+license = "MIT OR Apache-2.0"
 edition = "2018"
+categories = ["command-line-utilities"]
+keywords = ["cli", "graphics"]
+homepage = "https://github.com/afajl/mob"
+readme = "README.md"
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }

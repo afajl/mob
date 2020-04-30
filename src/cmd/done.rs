@@ -87,6 +87,7 @@ impl<'a> Done<'a> {
             .run(&["branch", "-D", session.branches.branch.as_str()])?;
         self.git.run(&[
             "push",
+            "--no-verify",
             &self.config.remote,
             "--delete",
             session.branches.branch.as_str(),

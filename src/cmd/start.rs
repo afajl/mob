@@ -182,6 +182,7 @@ impl<'a> Start<'a> {
                     &self.config.remote,
                     "--delete",
                     branches.branch.as_str(),
+                    "--no-verify",
                 ])?;
             }
         }
@@ -191,6 +192,7 @@ impl<'a> Start<'a> {
 
         self.git.run(&[
             "push",
+            "--no-verify",
             "--set-upstream",
             self.config.remote.as_str(),
             branches.branch.as_str(),

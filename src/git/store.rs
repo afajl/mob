@@ -42,6 +42,7 @@ impl<'repo> Store for GitCommand<'repo> {
 
         self.run_quietly(&[
             "push",
+            "--no-verify",
             self.remote.as_str(),
             format!("{}:{}", SESSION_HEAD, SESSION_HEAD).as_str(),
         ])
