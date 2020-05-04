@@ -1,19 +1,16 @@
 # mob
 
-A CLI tool to work in a remote mob with git.
+A console tool to work in a remote mob with git.
 
-* Sync branch fast and easy
-* Timer
+* Handover code fast between drivers
+* Nice timer
 * Remembers order of drivers
 * Configurable interval for breaks and lunch
 
-## How to install
-Install rust if you don't have it
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
+![mob screen](screen.gif)
 
-then run `make install` in this repo.
+## How to install
+Install rust if you don't have it and then run `make install` in this repo.
 
 
 ## Usage 
@@ -28,9 +25,16 @@ Run `mob` for help on more commands.
 
 
 ## How it works
-`mob` uses a detashed branch called `mob-meta` to save session
+`mob` uses an orphan branch called `mob-meta` to save session
 state and settings. You can view the session content with `mob
 status` and delete it with `mob clean`.
 
-The session can be in 4 different states as depicted below.
+The session can be in 4 different states:
+
 ![mob states](state.svg)
+
+
+## Thanks
+Inspiration for this tool comes from [Remote mob
+programming](https://www.remotemobprogramming.org/) and their tool
+[mob](https://github.com/remotemobprogramming/mob) written in Go.
