@@ -27,7 +27,6 @@ pub struct GitCommand<'repo> {
     command: command::Command<'repo>,
     repo: Repository,
     pub remote: String,
-    dry_run: bool,
 }
 
 impl<'repo> GitCommand<'repo> {
@@ -39,7 +38,6 @@ impl<'repo> GitCommand<'repo> {
             command,
             repo,
             remote,
-            dry_run: false,
         })
     }
 
@@ -50,7 +48,6 @@ impl<'repo> GitCommand<'repo> {
             command,
             repo,
             remote: "origin".into(),
-            dry_run: false,
         }
     }
 
@@ -129,9 +126,6 @@ impl<'repo> Git for GitCommand<'repo> {
     }
 
     fn tree_is_clean(&self) -> Result<bool> {
-        if self.dry_run {
-            return Ok(true);
-        }
         self.command
             .run_stdout(&["status", "--short"])
             .map(|output| output.trim().is_empty())

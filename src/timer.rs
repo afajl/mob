@@ -1,8 +1,10 @@
-use crate::{command, os};
+use crate::{command, duration, os};
 use anyhow::Result;
 use chrono;
 use console::Term;
 use std::thread;
+
+const FONT_HEIGHT: usize = 7;
 
 pub trait Timer {
     fn start(&self, title: &str, duration: chrono::Duration, message: &str) -> Result<()>;
@@ -30,12 +32,12 @@ impl<'a> Timer for ConsoleTimer<'a> {
         let term = Term::stdout();
         term.set_title(title);
         println!("\n{}", title);
-        while time_left > chrono::Duration::zero() {
-            let formatted = format_duration(time_left);
+        while time_left >= chrono::Duration::zero() {
+            let formatted = duration::format(time_left).clock();
             let letters = asci_time(formatted.as_str());
 
             if time_left != duration {
-                term.clear_last_lines(7)?;
+                term.clear_last_lines(FONT_HEIGHT)?;
             }
             print_ascii(&term, letters)?;
             thread::sleep(second.to_std()?);
@@ -67,7 +69,7 @@ fn asci_time(time: &str) -> Vec<&str> {
 }
 
 fn print_ascii(term: &Term, letters: Vec<&str>) -> Result<()> {
-    let lines: Vec<String> = (0..7)
+    let lines: Vec<String> = (0..FONT_HEIGHT)
         .map(|row| //for row in 0..5 {
         letters
             .iter()
@@ -79,20 +81,6 @@ fn print_ascii(term: &Term, letters: Vec<&str>) -> Result<()> {
         term.write_line(line.as_str())?;
     }
     Ok(())
-}
-
-fn format_duration(duration: chrono::Duration) -> String {
-    let h = duration.num_hours();
-    let m = duration.num_minutes() - h * 60;
-    let s = duration.num_seconds() - m * 60;
-
-    if duration.num_hours() > 0 {
-        format!("{:>2}:{:0>2}", h, m)
-    } else if duration.num_minutes() > 0 {
-        format!("{:>2}:{:0>2}", m, s)
-    } else {
-        format!("{:>2}", s)
-    }
 }
 
 #[rustfmt::skip]

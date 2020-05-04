@@ -1,3 +1,16 @@
+install:
+	cargo build --release
+	cp target/release/mob /usr/local/bin
+
+pull:
+	git pull
+
+update: pull install
+
+uml:
+	plantuml -tsvg state.uml
+.PHONY: uml
+
 test-repos:
 	mkdir testrepos
 	git init --bare testrepos/origin
@@ -9,10 +22,3 @@ test-repos:
 clean-repos:
 	rm -rf testrepos
 
-update:
-	git pull
-	cargo build
-	cp target/debug/mob /usr/local/bin
-
-uml:
-	plantuml -tpng state.uml

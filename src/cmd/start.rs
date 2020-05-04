@@ -186,13 +186,15 @@ impl<'a> Start<'a> {
                 .interact()?;
             if clear_branch {
                 self.git.run(&["branch", "-D", branches.branch.as_str()])?;
-                self.git.run(&[
-                    "push",
-                    &self.config.remote,
-                    "--delete",
-                    branches.branch.as_str(),
-                    "--no-verify",
-                ])?;
+                self.git
+                    .run(&[
+                        "push",
+                        &self.config.remote,
+                        "--delete",
+                        branches.branch.as_str(),
+                        "--no-verify",
+                    ])
+                    .unwrap_or_else(|err| log::debug!("Could not remove remote branch: {}", err));
             }
         }
 

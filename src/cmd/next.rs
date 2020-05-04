@@ -1,4 +1,4 @@
-use crate::{config::Config, git, session, timer};
+use crate::{config::Config, duration, git, session, timer};
 use anyhow::Result;
 use chrono::{Duration, Local, NaiveTime, Utc};
 use session::State;
@@ -81,7 +81,7 @@ impl<'a> Next<'a> {
             None => "anyone!",
         };
 
-        if let Some((break_type, duration)) = self.take_break(&session)? {
+        if let Some((break_type, duration)) = self.take_break_or_lunch(&session)? {
             let session = session::Session {
                 state: State::Break {
                     next: next_driver.clone(),
@@ -109,8 +109,23 @@ impl<'a> Next<'a> {
         Ok(())
     }
 
-    fn take_break(&self, session: &session::Session) -> Result<Option<(&str, Duration)>> {
-        let settings = session.settings.clone().unwrap();
+    fn take_break_or_lunch(&self, session: &session::Session) -> Result<Option<(&str, Duration)>> {
+        if let Some(b) = self.take_lunch(session)? {
+            return Ok(Some(b));
+        }
+
+        if let Some(b) = self.take_break(session)? {
+            return Ok(Some(b));
+        }
+
+        Ok(None)
+    }
+
+    fn take_lunch(&self, session: &session::Session) -> Result<Option<(&str, Duration)>> {
+        let settings = session
+            .settings
+            .as_ref()
+            .expect("Should have settings at this point");
 
         log::trace!(
             "Lunch parameters: now={}, lunch_start={}, work_duration={}",
@@ -119,14 +134,14 @@ impl<'a> Next<'a> {
             &settings.work_duration
         );
 
-        let is_lunch = is_lunch_time(
+        let should_lunch = is_lunch_time(
             Local::now().time(),
             settings.work_duration,
-            settings.lunch_start,
-            settings.lunch_end,
+            settings.lunch_start.as_str(),
+            settings.lunch_end.as_str(),
         )?;
 
-        if let Some(duration) = is_lunch {
+        if let Some(duration) = should_lunch {
             let take_lunch = dialoguer::Confirmation::new()
                 .with_text("It's lunch time. Go for lunch?")
                 .default(true)
@@ -135,6 +150,15 @@ impl<'a> Next<'a> {
                 return Ok(Some(("Lunch", duration)));
             }
         }
+
+        return Ok(None);
+    }
+
+    fn take_break(&self, session: &session::Session) -> Result<Option<(&str, Duration)>> {
+        let settings = session
+            .settings
+            .as_ref()
+            .expect("Should have settings at this point");
 
         log::trace!(
             "Break parameters: now={}, last_break={}, break_interval={}, work_duration={}",
@@ -153,6 +177,9 @@ impl<'a> Next<'a> {
         );
 
         if let Some(duration) = should_break {
+            let last_break = duration::format(Utc::now() - session.last_break);
+
+            log::info!("It has been {} since the last break", last_break.human());
             let take_break = dialoguer::Confirmation::new()
                 .with_text("Take a break?")
                 .default(true)
@@ -185,11 +212,11 @@ fn is_break_time(
 fn is_lunch_time(
     now: chrono::NaiveTime,
     work_duration: i64,
-    lunch_start: String,
-    lunch_end: String,
+    lunch_start: &str,
+    lunch_end: &str,
 ) -> Result<Option<Duration>> {
-    let lunch_start = NaiveTime::parse_from_str(lunch_start.as_str(), "%H:%M")?;
-    let lunch_end = NaiveTime::parse_from_str(lunch_end.as_str(), "%H:%M")?;
+    let lunch_start = NaiveTime::parse_from_str(lunch_start, "%H:%M")?;
+    let lunch_end = NaiveTime::parse_from_str(lunch_end, "%H:%M")?;
     let work_duration = Duration::minutes(work_duration);
     let lunch_duration = lunch_end - lunch_start;
 

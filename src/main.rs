@@ -1,14 +1,11 @@
 use anyhow::Result;
 use clap;
 use clap::Clap;
-use log;
 use remotemob::{cmd, config, emoji_logger, git, session, session::Store, timer};
 
 #[derive(Clap)]
 #[clap(version = "1.0", author = "Paul")]
 struct Opts {
-    // #[clap(long = "dry-run")]
-    // dry_run: bool,
     #[clap(subcommand)]
     subcmd: SubCommand,
 }
@@ -31,7 +28,7 @@ enum SubCommand {
     #[clap(name = "next")]
     Next,
 
-    /// Stop session
+    /// Stop session and merge branch
     #[clap(name = "done")]
     Done,
 }
@@ -43,11 +40,8 @@ fn main() -> Result<()> {
     let config = config::load()?;
 
     let timer = timer::ConsoleTimer::new(config.commands());
-    // timer.start("My title", chrono::Duration::seconds(63), "message")?;
     let git = git::GitCommand::new(None, config.remote.clone())?;
     let store = session::SessionStore::new(&git);
-
-    log::trace!("Running command {:?}", opts.subcmd);
 
     match opts.subcmd {
         SubCommand::Start(opts) => cmd::Start::new(&git, &store, &timer, opts, config).run()?,

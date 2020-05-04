@@ -1,4 +1,4 @@
-# Remote mob
+# mob
 
 A CLI tool to work in a remote mob with git.
 
@@ -7,23 +7,30 @@ A CLI tool to work in a remote mob with git.
 * Remembers order of drivers
 * Configurable interval for breaks and lunch
 
+## How to install
+Install rust if you don't have it
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
 
-### Mob config
+then run `make install` in this repo.
 
 
-### TODO
-* Make it possible to skip breaks
-* Make status output nicer
-* Publish to crate.io when clap reaches version 3.0
-* Write tests
-* Write documentation
-* Create screen recording
-* Clean up break code in next.rs and display time since last
-  break
-* Log events and print statistics on done
+## Usage 
+- `mob start` creates a new session or takes over from the
+  previous driver. It will ask a bunch of questions about
+  branches, work interval, break times if it needs.
+- `mob next` hands over to the next driver.
+- `mob done` squashes the feature branch to staging on the base branch
+  (default master) and removes it.
 
-X Trevligare när tidigare inte kört next, kanske retry fråga
-X Debug break time, add trace
-X Fix broken state when local branch exists but remote does not
-X Pretty timer using ascii font
-X Rename to mob
+Run `mob` for help on more commands.
+
+
+## How it works
+`mob` uses a detashed branch called `mob-meta` to save session
+state and settings. You can view the session content with `mob
+status` and delete it with `mob clean`.
+
+The session can be in 4 different states as depicted below.
+![mob states](state.svg)
