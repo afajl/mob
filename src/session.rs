@@ -27,7 +27,7 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Self {
-            commit_message: "mob synk [skip ci]".into(),
+            commit_message: "mob sync [skip ci]".into(),
             work_duration: 10,
             break_interval: 55,
             break_duration: 5,

@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap;
 use clap::Clap;
 use log;
-use mob::{cmd, config, emoji_logger, git, session, session::Store, timer};
+use remotemob::{cmd, config, emoji_logger, git, session, session::Store, timer};
 
 #[derive(Clap)]
 #[clap(version = "1.0", author = "Paul")]

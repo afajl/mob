@@ -1,14 +1,19 @@
 
 @startuml
+skinparam state {
+  BackgroundColor LightGray
+  BorderColor LightGray
+  FontName Avenir
+}
+
 
 [*] --> Stopped
 hide empty description
-Stopped --> Working: mob start (StartInitial)
-Working --> WaitingForNext: mob next (Next)
-Working --> Break: mob next (TakeBreak)
-Break: until
-Break --> WaitingForNext: timer done
-WaitingForNext --> Stopped: mob done (Done)
-WaitingForNext --> Working: mob start (Start)
-Working --> Stopped: mob done (Done)
+Stopped --> Working: mob start
+Working --> WaitingForNext: mob next
+Working --> Break: mob next (when break)
+Break --> Working: mob start
+WaitingForNext --> Stopped: mob done
+WaitingForNext --> Working: mob start
+Working --> Stopped: mob done
 @enduml
