@@ -6,14 +6,9 @@ use session::State;
 
 #[derive(Clap, Debug)]
 pub struct StartOpts {
-    #[clap(name = "base-branch")]
-    base_branch: Option<String>,
-
-    #[clap(name = "branch")]
-    branch: Option<String>,
-
-    #[clap(short = "q")]
-    quiet: bool,
+    /// How long you want this work session to last
+    #[clap(name = "MINUTES")]
+    minutes: Option<i64>,
 }
 
 pub struct Start<'a> {
@@ -164,18 +159,7 @@ impl<'a> Start<'a> {
             None => session::Settings::ask()?,
         };
 
-        let branches = match (&self.opts.base_branch, &self.opts.branch) {
-            (Some(base_branch), Some(branch)) => session::Branches {
-                branch: branch.clone(),
-                base_branch: base_branch.clone(),
-            },
-            _ => {
-                if self.opts.quiet {
-                    return Err(anyhow!("Missing branches"));
-                }
-                session::Branches::ask(session.branches)?
-            }
-        };
+        let branches = session::Branches::ask(session.branches)?;
 
         let remote_branches = branches.with_remote(&self.config.remote);
 
@@ -338,7 +322,9 @@ impl<'a> Start<'a> {
         last_break
     }
 
-    fn start_timer(&self, duration: i64, next: Option<String>) -> Result<()> {
+    fn start_timer(&self, minutes: i64, next: Option<String>) -> Result<()> {
+        let minutes = self.opts.minutes.unwrap_or(minutes);
+
         let timer_message = format!(
             "mob next {}",
             match next {
@@ -349,7 +335,7 @@ impl<'a> Start<'a> {
 
         self.timer.start(
             "Your turn",
-            chrono::Duration::minutes(duration),
+            chrono::Duration::minutes(minutes),
             timer_message.as_str(),
         )?;
         log::info!("Done. Run mob next");
