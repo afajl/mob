@@ -1,6 +1,6 @@
 use anyhow::Result;
 use confy;
-use dialoguer::{Confirmation, Input};
+use dialoguer::{Confirm, Input};
 use directories::UserDirs;
 use serde::{Deserialize, Serialize};
 use std::default::Default;
@@ -33,8 +33,8 @@ impl Config {
             .default(default.remote)
             .interact()?;
 
-        let use_say_comand = Confirmation::new()
-            .with_text("Do you want to use speech synthesis for prompts?")
+        let use_say_comand = Confirm::new()
+            .with_prompt("Do you want to use speech synthesis for prompts?")
             .default(true)
             .interact()?;
 
@@ -49,8 +49,8 @@ impl Config {
             None
         };
 
-        let use_notify_command = Confirmation::new()
-            .with_text("Do you want to show desktop notifications?")
+        let use_notify_command = Confirm::new()
+            .with_prompt("Do you want to show desktop notifications?")
             .default(true)
             .interact()?;
 

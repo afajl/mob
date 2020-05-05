@@ -142,8 +142,8 @@ impl<'a> Next<'a> {
         )?;
 
         if let Some(duration) = should_lunch {
-            let take_lunch = dialoguer::Confirmation::new()
-                .with_text("It's lunch time. Go for lunch?")
+            let take_lunch = dialoguer::Confirm::new()
+                .with_prompt("It's lunch time. Go for lunch?")
                 .default(true)
                 .interact()?;
             if take_lunch {
@@ -180,8 +180,8 @@ impl<'a> Next<'a> {
             let last_break = duration::format(Utc::now() - session.last_break);
 
             log::info!("It has been {} since the last break", last_break.human());
-            let take_break = dialoguer::Confirmation::new()
-                .with_text("Take a break?")
+            let take_break = dialoguer::Confirm::new()
+                .with_prompt("Take a break?")
                 .default(true)
                 .interact()?;
             if take_break {

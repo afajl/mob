@@ -24,8 +24,8 @@ impl<'a> Done<'a> {
             State::Working { driver } if driver == me.as_str() => self.done(session)?,
             State::Working { driver } => {
                 log::warn!("{} is currently working", driver);
-                let take_over = dialoguer::Confirmation::new()
-                    .with_text("Merge anyway with risk of loosing work?")
+                let take_over = dialoguer::Confirm::new()
+                    .with_prompt("Merge anyway with risk of loosing work?")
                     .default(false)
                     .interact()?;
 

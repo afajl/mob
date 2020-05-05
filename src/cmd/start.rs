@@ -180,8 +180,8 @@ impl<'a> Start<'a> {
                 return Err(anyhow!(message));
             }
 
-            let clear_branch = dialoguer::Confirmation::new()
-                .with_text((message + ". Remove branch?").as_str())
+            let clear_branch = dialoguer::Confirm::new()
+                .with_prompt((message + ". Remove branch?").as_str())
                 .default(false)
                 .interact()?;
             if clear_branch {
