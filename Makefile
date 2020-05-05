@@ -3,7 +3,8 @@ install:
 	cp target/release/mob /usr/local/bin
 
 pull:
-	git pull
+	git checkout master
+	git pull --ff-only
 
 update: pull install
 

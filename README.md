@@ -7,10 +7,12 @@ A console tool to work in a remote mob with git.
 * Remembers order of drivers
 * Configurable interval for breaks and lunch
 
-![mob screen](screen.gif)
+![mob screen](https://github.com/afajl/mob/raw/master/screen.gif)
 
 ## How to install
-Install rust if you don't have it and then run `make install` in this repo.
+```bash
+cargo install remotemob
+```
 
 
 ## Usage 
@@ -31,7 +33,7 @@ status` and delete it with `mob clean`.
 
 The session can be in 4 different states:
 
-![mob states](state.svg)
+![mob states](https://github.com/afajl/mob/raw/master/state.svg)
 
 
 ## Thanks
