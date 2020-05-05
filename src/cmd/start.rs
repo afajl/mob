@@ -185,41 +185,7 @@ impl<'a> Start<'a> {
         self.git
             .run(&["merge", remote_branches.base_branch.as_str(), "--ff-only"])?;
 
-        if self.git.has_branch(branches.branch.as_str())? {
-            let prompt = format!("Branch {} already exists", branches.branch);
-            let selections = &["Continue using it", "Delete local and remote branch"];
-            let selection = dialoguer::Select::new()
-                .with_prompt(prompt)
-                .default(0)
-                .items(&selections[..])
-                .interact()?;
-
-            if selection == 1 {
-                self.git.run(&["branch", "-D", branches.branch.as_str()])?;
-                self.git
-                    .run(&[
-                        "push",
-                        &self.config.remote,
-                        "--delete",
-                        branches.branch.as_str(),
-                        "--no-verify",
-                    ])
-                    .unwrap_or_else(|err| log::debug!("Could not remove remote branch: {}", err));
-            }
-        }
-
-        self.git
-            .run(&["checkout", "-b", branches.branch.as_str()])?;
-
-        self.git
-            .run(&[
-                "push",
-                "--no-verify",
-                "--set-upstream",
-                self.config.remote.as_str(),
-                branches.branch.as_str(),
-            ])
-            .unwrap_or_else(|err| log::debug!("Could not set upstream branch: {}", err));
+        self.setup_branch(&branches, &remote_branches)?;
 
         let session = session::Session {
             state: State::Working {
@@ -237,6 +203,131 @@ impl<'a> Start<'a> {
             session.settings.unwrap().work_duration,
             session.drivers.next(&self.config.name.as_str()),
         )
+    }
+
+    fn setup_branch(
+        &self,
+        branches: &session::Branches,
+        remote_branches: &session::Branches,
+    ) -> Result<()> {
+        let create_and_push = || -> Result<()> {
+            self.git
+                .run(&["checkout", "-b", branches.branch.as_str()])?;
+
+            self.git.run(&[
+                "push",
+                "--no-verify",
+                "--set-upstream",
+                self.config.remote.as_str(),
+                branches.branch.as_str(),
+            ])?;
+            Ok(())
+        };
+
+        let has_local_branch = self.git.has_branch(branches.branch.as_str())?;
+        let has_remote_branch = self.git.has_branch(remote_branches.branch.as_str())?;
+
+        match (has_local_branch, has_remote_branch) {
+            (true, true) => {
+                let prompt = format!("Remote and local branch {} already exists", branches.branch);
+                let selections = &[
+                    "Use these branches",
+                    "Remove local branch and checkout remote",
+                    "Delete local and remote branch and start fresh",
+                ];
+                let selection = dialoguer::Select::new()
+                    .with_prompt(prompt)
+                    .default(0)
+                    .items(&selections[..])
+                    .interact()?;
+
+                match selection {
+                    0 => {
+                        self.git.run(&["checkout", branches.branch.as_str()])?;
+                    }
+
+                    1 => {
+                        self.git.run(&["branch", "-D", branches.branch.as_str()])?;
+                        self.git.run(&["checkout", branches.branch.as_str()])?;
+                    }
+                    _ => {
+                        self.git.run(&["branch", "-D", branches.branch.as_str()])?;
+                        self.git.run(&[
+                            "push",
+                            &self.config.remote,
+                            "--delete",
+                            branches.branch.as_str(),
+                            "--no-verify",
+                        ])?;
+
+                        create_and_push()?;
+                    }
+                }
+            }
+            (true, false) => {
+                let prompt = format!(
+                    "Local branch {} already exists but not remote",
+                    branches.branch
+                );
+                let selections = &["Push local branch", "Delete local branch and start fresh"];
+                let selection = dialoguer::Select::new()
+                    .with_prompt(prompt)
+                    .default(0)
+                    .items(&selections[..])
+                    .interact()?;
+
+                match selection {
+                    0 => {
+                        self.git.run(&[
+                            "push",
+                            "--no-verify",
+                            "--set-upstream",
+                            self.config.remote.as_str(),
+                            branches.branch.as_str(),
+                        ])?;
+                        self.git.run(&["checkout", branches.branch.as_str()])?;
+                    }
+                    _ => {
+                        self.git.run(&["branch", "-D", branches.branch.as_str()])?;
+
+                        create_and_push()?;
+                    }
+                }
+            }
+            (false, true) => {
+                let prompt = format!("Remote branch {} already exists", branches.branch);
+                let selections = &[
+                    "Checkout remote branch",
+                    "Delete remote branch and start fresh",
+                ];
+                let selection = dialoguer::Select::new()
+                    .with_prompt(prompt)
+                    .default(0)
+                    .items(&selections[..])
+                    .interact()?;
+
+                match selection {
+                    0 => {
+                        self.git.run(&["checkout", branches.branch.as_str()])?;
+                    }
+                    _ => {
+                        self.git.run(&[
+                            "push",
+                            &self.config.remote,
+                            "--delete",
+                            branches.branch.as_str(),
+                            "--no-verify",
+                        ])?;
+
+                        create_and_push()?;
+                    }
+                }
+            }
+            (false, false) => {
+                create_and_push()?;
+            }
+        };
+        Ok(())
     }
 
     fn maybe_reset_break(&self, last_break: DateTime<Utc>) -> DateTime<Utc> {
