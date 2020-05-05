@@ -186,16 +186,15 @@ impl<'a> Start<'a> {
             .run(&["merge", remote_branches.base_branch.as_str(), "--ff-only"])?;
 
         if self.git.has_branch(branches.branch.as_str())? {
-            let message = format!("Branch {} already exists", branches.branch);
-            if self.opts.quiet {
-                return Err(anyhow!(message));
-            }
-
-            let clear_branch = dialoguer::Confirm::new()
-                .with_prompt((message + ". Remove branch?").as_str())
-                .default(false)
+            let prompt = format!("Branch {} already exists", branches.branch);
+            let selections = &["Continue using it", "Delete local and remote branch"];
+            let selection = dialoguer::Select::new()
+                .with_prompt(prompt)
+                .default(0)
+                .items(&selections[..])
                 .interact()?;
-            if clear_branch {
+
+            if selection == 1 {
                 self.git.run(&["branch", "-D", branches.branch.as_str()])?;
                 self.git
                     .run(&[
@@ -212,13 +211,15 @@ impl<'a> Start<'a> {
         self.git
             .run(&["checkout", "-b", branches.branch.as_str()])?;
 
-        self.git.run(&[
-            "push",
-            "--no-verify",
-            "--set-upstream",
-            self.config.remote.as_str(),
-            branches.branch.as_str(),
-        ])?;
+        self.git
+            .run(&[
+                "push",
+                "--no-verify",
+                "--set-upstream",
+                self.config.remote.as_str(),
+                branches.branch.as_str(),
+            ])
+            .unwrap_or_else(|err| log::debug!("Could not set upstream branch: {}", err));
 
         let session = session::Session {
             state: State::Working {
