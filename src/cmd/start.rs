@@ -229,6 +229,7 @@ impl<'a> Start<'a> {
 
     fn maybe_reset_break(&self, last_break: DateTime<Utc>) -> DateTime<Utc> {
         if Utc::now() - last_break > Duration::hours(8) {
+            log::trace!("resetting last brake after 8 hours");
             return Utc::now();
         }
         last_break
