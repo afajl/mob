@@ -66,20 +66,31 @@ impl<'a> Start<'a> {
                     _ => panic!("impossible selection"),
                 }
             }
-            State::Break { next: Some(driver) } if driver == me.as_str() => {
-                session.last_break = Utc::now();
+            State::WaitingForNext {
+                next: Some(driver),
+                is_break,
+            } if driver == me.as_str() => {
+                if *is_break {
+                    session.last_break = Utc::now();
+                }
                 self.start(session)?
             }
-            State::Break { next: None } => {
-                session.last_break = Utc::now();
+            State::WaitingForNext {
+                next: None,
+                is_break,
+            } => {
+                if *is_break {
+                    session.last_break = Utc::now();
+                }
                 self.start(session)?
             }
-            State::Break { next: Some(driver) } => self.take_over(driver, session.clone())?,
-            State::WaitingForNext { next: Some(driver) } if driver == me.as_str() => {
-                self.start(session)?
-            }
-            State::WaitingForNext { next: None } => self.start(session)?,
-            State::WaitingForNext { next: Some(driver) } => {
+            State::WaitingForNext {
+                next: Some(driver),
+                is_break,
+            } => {
+                if *is_break {
+                    session.last_break = Utc::now();
+                }
                 self.take_over(driver, session.clone())?
             }
         };
@@ -253,89 +264,3 @@ impl<'a> Start<'a> {
         Ok(())
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use crate::{config, test, test::MockGit};
-//     use anyhow::Result;
-//     use git::CommitFile;
-//     use session::Session;
-
-//     #[test
-//     ]
-//j
-//
-//     fn start_new_ends_up_on_right_branch() -> Result<()> {
-//         let opts = StartOpts {
-//             base_branch: Some("master".to_string()),
-//             branch: Some("test-branch".to_string()),
-//             quiet: true,
-//         };
-
-//         let config = config::Config::default();
-//         let git = MockGit::new();
-
-//         let start = Start::new(&git, opts, config);
-
-//         let session = Session::default();
-//         let new_session = start.run(session)?;
-
-//         assert_eq!(new_session.branches.base_branch, "master".to_string());
-//         assert_eq!(new_session.branches.branch, "test-branch".to_string());
-
-//         Ok(())
-//     }
-
-//     #[test]
-//     fn start_new_fails_when_branch_exists() -> Result<()> {
-//         let base_branch = "master".to_string();
-//         let opts = StartOpts {
-//             base_branch: Some(base_branch.clone()),
-//             branch: Some("test-branch".to_string()),
-//             quiet: true,
-//         };
-
-//         let config = config::Config::default();
-
-//         let (_dirs, git) = test::new_git();
-
-//         let commit = CommitFile {
-//             filename: "file",
-//             data: "knas".as_bytes(),
-//             message: "msg",
-//             reference: "refs/heads/test-branch",
-//         };
-
-//         git.create_commit(commit)?;
-
-//         let start = Start::new(&git, opts, config);
-
-//         let session = Session::default();
-//         match start.run(session) {
-//             Ok(_) => panic!("Should not create new branch in quiet mode"),
-//             Err(_) => Ok(()),
-//         }
-//     }
-
-//     // #[test]
-//     // fn start_new_missing_branch() -> Result<()> {
-//     //     let opts = StartOpts {
-//     //         base_branch: Some("test-base".to_string()),
-//     //         branch: None,
-//     //         quiet: true,
-//     //     };
-
-//     //     let config = config::Config::default();
-//     //     let settings = Settings::default();
-
-//     //     let git = MockGit::new();
-//     //     let start = Start::new(&git, opts, config, settings);
-
-//     //     let session = Session::default();
-//     //     match start.run(session) {
-//     //         Ok(_) => panic!("Missing branch should fail"),
-//     //         Err(_) => Ok(()),
-//     //     }
-//     // }
-// }

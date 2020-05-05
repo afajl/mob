@@ -175,9 +175,13 @@ impl Default for Drivers {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum State {
     Stopped,
-    Working { driver: String },
-    Break { next: Option<String> },
-    WaitingForNext { next: Option<String> },
+    Working {
+        driver: String,
+    },
+    WaitingForNext {
+        next: Option<String>,
+        is_break: bool,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

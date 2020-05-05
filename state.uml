@@ -11,8 +11,6 @@ skinparam state {
 hide empty description
 Stopped --> Working: mob start
 Working --> WaitingForNext: mob next
-Working --> Break: mob next (when break)
-Break --> Working: mob start
 WaitingForNext --> Stopped: mob done
 WaitingForNext --> Working: mob start
 Working --> Stopped: mob done

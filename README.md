@@ -31,7 +31,7 @@ Run `mob` for help on more commands.
 state and settings. You can view the session content with `mob
 status` and delete it with `mob clean`.
 
-The session can be in 4 different states:
+The session can be in 3 different states:
 
 ![mob states](https://github.com/afajl/mob/raw/master/state.svg)
 

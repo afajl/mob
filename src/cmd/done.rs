@@ -33,7 +33,6 @@ impl<'a> Done<'a> {
                     self.done(session)?;
                 }
             }
-            State::Break { .. } => self.done(session)?,
             State::WaitingForNext { .. } => self.done(session)?,
         }
         Ok(())

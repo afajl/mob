@@ -3,6 +3,11 @@ use anyhow::Result;
 use chrono::{Duration, Local, NaiveTime, Utc};
 use session::State;
 
+enum Break<'a> {
+    Yes(Duration, &'a str, session::Session),
+    No(session::Session),
+}
+
 pub struct Next<'a> {
     git: &'a dyn git::Git,
     store: &'a dyn session::Store,
@@ -37,14 +42,7 @@ impl<'a> Next<'a> {
                 log::warn!("The current driver is {}", driver);
             }
             State::Working { .. } => self.next(session)?,
-            State::Break { next } => {
-                match next {
-                    Some(name) if name == me.as_str() => log::info!("It's your turn. Run start"),
-                    Some(name) => log::info!("{} should run start", name),
-                    None => log::info!("Run start"),
-                };
-            }
-            State::WaitingForNext { next } => {
+            State::WaitingForNext { next, .. } => {
                 match next {
                     Some(name) if name == me.as_str() => log::info!("It's your turn. Run start"),
                     Some(name) => log::info!("Waiting for {} to start", name),
@@ -81,47 +79,50 @@ impl<'a> Next<'a> {
             None => "anyone!",
         };
 
-        if let Some((break_type, duration)) = self.take_break_or_lunch(&session)? {
-            let session = session::Session {
-                state: State::Break {
-                    next: next_driver.clone(),
-                },
-                ..session
-            };
-            self.store.save(&session)?;
+        let take_break = self.take_break_or_lunch(session)?;
 
-            let title = format!("{}, next driver {}", break_type, next_driver_name);
-            let message = format!("{} over. {} turn", break_type, next_driver_name);
+        match take_break {
+            Break::Yes(duration, name, session) => {
+                let session = session::Session {
+                    state: State::WaitingForNext {
+                        next: next_driver.clone(),
+                        is_break: true,
+                    },
+                    ..session
+                };
+                self.store.save(&session)?;
 
-            self.timer
-                .start(title.as_str(), duration, message.as_str())?;
-        } else {
-            let session = session::Session {
-                state: State::WaitingForNext {
-                    next: next_driver.clone(),
-                },
-                ..session
-            };
-            self.store.save(&session)?;
+                let title = format!("{}, next driver {}", name, next_driver_name);
+                let message = format!("{} over. {} turn", name, next_driver_name);
 
-            log::info!("Next driver: {}", next_driver_name);
-        }
+                self.timer
+                    .start(title.as_str(), duration, message.as_str())?;
+            }
+            Break::No(session) => {
+                let session = session::Session {
+                    state: State::WaitingForNext {
+                        next: next_driver.clone(),
+                        is_break: false,
+                    },
+                    ..session
+                };
+                self.store.save(&session)?;
+            }
+        };
+
+        log::info!("Next driver: {}", next_driver_name);
         Ok(())
     }
 
-    fn take_break_or_lunch(&self, session: &session::Session) -> Result<Option<(&str, Duration)>> {
-        if let Some(b) = self.take_lunch(session)? {
-            return Ok(Some(b));
-        }
-
-        if let Some(b) = self.take_break(session)? {
-            return Ok(Some(b));
-        }
-
-        Ok(None)
+    fn take_break_or_lunch(&self, session: session::Session) -> Result<Break> {
+        let take_lunch = self.take_lunch(session)?;
+        Ok(match take_lunch {
+            Break::Yes(..) => take_lunch,
+            Break::No(session) => self.take_break(session)?,
+        })
     }
 
-    fn take_lunch(&self, session: &session::Session) -> Result<Option<(&str, Duration)>> {
+    fn take_lunch(&self, session: session::Session) -> Result<Break> {
         let settings = session
             .settings
             .as_ref()
@@ -147,14 +148,14 @@ impl<'a> Next<'a> {
                 .default(true)
                 .interact()?;
             if take_lunch {
-                return Ok(Some(("Lunch", duration)));
+                return Ok(Break::Yes(duration, "Lunch", session));
             }
         }
 
-        return Ok(None);
+        Ok(Break::No(session))
     }
 
-    fn take_break(&self, session: &session::Session) -> Result<Option<(&str, Duration)>> {
+    fn take_break(&self, session: session::Session) -> Result<Break> {
         let settings = session
             .settings
             .as_ref()
@@ -179,17 +180,30 @@ impl<'a> Next<'a> {
         if let Some(duration) = should_break {
             let last_break = duration::format(Utc::now() - session.last_break);
 
-            log::info!("It has been {} since the last break", last_break.human());
-            let take_break = dialoguer::Confirm::new()
-                .with_prompt("Take a break?")
-                .default(true)
+            let prompt = format!("It has been {} since the last break", last_break.human());
+
+            let selections = &[
+                "Take a break",
+                "Just one more iteration...",
+                "Skip this break",
+            ];
+            let selection = dialoguer::Select::new()
+                .with_prompt(prompt)
+                .default(0)
+                .items(&selections[..])
                 .interact()?;
-            if take_break {
-                return Ok(Some(("Break", duration)));
-            }
+
+            return match selection {
+                0 => Ok(Break::Yes(duration, "Break", session)),
+                1 => Ok(Break::No(session)),
+                _ => Ok(Break::No(session::Session {
+                    last_break: Utc::now(),
+                    ..session
+                })),
+            };
         }
 
-        Ok(None)
+        Ok(Break::No(session))
     }
 }
 
