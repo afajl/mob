@@ -51,17 +51,27 @@ impl<'repo> Store for GitCommand<'repo> {
     }
 
     fn load(&self) -> Result<Session, store::Error> {
-        if let Err(err) = self.run_quietly(&[
+        self.run_quietly(&["branch", "-D", SESSION_HEAD])
+            .unwrap_or_else(|err| {
+                log::trace!(
+                    "Could not delete local mob branch {}: {}",
+                    SESSION_HEAD,
+                    err
+                )
+            });
+
+        self.run_quietly(&[
             "fetch",
             self.remote.as_str(),
             format!("{}:{}", SESSION_HEAD, SESSION_HEAD).as_str(),
-        ]) {
+        ])
+        .unwrap_or_else(|err| {
             log::trace!(
                 "Could not fetch remote mob branch {}: {}",
                 SESSION_HEAD,
                 err
-            );
-        }
+            )
+        });
 
         let commit = self.last_commit(SESSION_HEAD);
 
