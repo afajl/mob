@@ -9,6 +9,22 @@ A console tool to work in a remote mob with git.
 
 ![mob screen](https://github.com/afajl/mob/raw/master/screen.gif)
 
+
+
+<!-- vim-markdown-toc GFM -->
+
+* [How to install](#how-to-install)
+* [Usage](#usage)
+  * [FAQ](#faq)
+    * [How do I remove all traces of `mob` from a repo](#how-do-i-remove-all-traces-of-mob-from-a-repo)
+    * [Where is the configuration stored](#where-is-the-configuration-stored)
+    * [How do I show the status](#how-do-i-show-the-status)
+    * [How do I change break times, lunch etc](#how-do-i-change-break-times-lunch-etc)
+* [How it works](#how-it-works)
+* [Thanks](#thanks)
+
+<!-- vim-markdown-toc -->
+
 ## How to install
 ```bash
 cargo install remotemob
@@ -24,6 +40,26 @@ cargo install remotemob
   (default master) and removes it.
 
 Run `mob` for help on more commands.
+
+### FAQ
+#### How do I remove all traces of `mob` from a repo
+1. Run `mob done` to remove the mob branch. Either commit the
+changes or run `git reset HEAD --hard` to discard changes.
+2. Run `mob clean` to remove the `mob-meta` branch.
+3. Delete `~/.mob` if you don't want to use `mob` more
+
+#### Where is the configuration stored
+Configuration local to you is stored in `~/.mob`. Configuration
+for a repository is stored in an orphan branch named `mob-meta`.  
+`mob start` creates all configuration needed to run. It is always
+safe to run `mob clean` to remove the repository config and start
+fresh.
+
+#### How do I show the status
+Run `mob status`
+
+#### How do I change break times, lunch etc
+Currently you have to run `mob clean` and then `mob start`.
 
 
 ## How it works
