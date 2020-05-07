@@ -303,10 +303,7 @@ mod tests {
         match is_lunch {
             Ok(Some(duration)) => assert_eq!(duration.num_minutes(), 60),
             Ok(None) => panic!("Should lunch"),
-            Err(err) => {
-                dbg!(&err);
-                panic!(err)
-            }
+            Err(err) => panic!(err),
         }
         Ok(())
     }
@@ -321,10 +318,7 @@ mod tests {
         match is_lunch {
             Ok(Some(_)) => panic!("should not lunch"),
             Ok(None) => (),
-            Err(err) => {
-                dbg!(&err);
-                panic!(err)
-            }
+            Err(err) => panic!(err),
         }
         Ok(())
     }
@@ -339,10 +333,7 @@ mod tests {
         match is_lunch {
             Ok(Some(_)) => panic!("should not lunch"),
             Ok(None) => (),
-            Err(err) => {
-                dbg!(&err);
-                panic!(err)
-            }
+            Err(err) => panic!(err),
         }
         Ok(())
     }

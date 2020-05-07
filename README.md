@@ -1,6 +1,6 @@
 # mob
 
-A console tool to work in a remote mob with git.
+A console tool to work in a remote mob (or pair) with git.
 
 * Handover code fast between drivers
 * Nice timer
@@ -16,10 +16,11 @@ A console tool to work in a remote mob with git.
 * [How to install](#how-to-install)
 * [Usage](#usage)
   * [FAQ](#faq)
-    * [How do I remove all traces of `mob` from a repo](#how-do-i-remove-all-traces-of-mob-from-a-repo)
-    * [Where is the configuration stored](#where-is-the-configuration-stored)
-    * [How do I show the status](#how-do-i-show-the-status)
-    * [How do I change break times, lunch etc](#how-do-i-change-break-times-lunch-etc)
+      * [Remove all traces of `mob` from a repo](#remove-all-traces-of-mob-from-a-repo)
+      * [Where the configuration stored](#where-the-configuration-stored)
+      * [Show status](#show-status)
+      * [How do I change break times, lunch etc](#how-do-i-change-break-times-lunch-etc)
+      * [Work duration is set to 15 but we're supposed to be in a meeting in 7 minutes](#work-duration-is-set-to-15-but-were-supposed-to-be-in-a-meeting-in-7-minutes)
 * [How it works](#how-it-works)
 * [Thanks](#thanks)
 
@@ -42,24 +43,27 @@ cargo install remotemob
 Run `mob` for help on more commands.
 
 ### FAQ
-#### How do I remove all traces of `mob` from a repo
+##### Remove all traces of `mob` from a repo
 1. Run `mob done` to remove the mob branch. Either commit the
 changes or run `git reset HEAD --hard` to discard changes.
 2. Run `mob clean` to remove the `mob-meta` branch.
 3. Delete `~/.mob` if you don't want to use `mob` more
 
-#### Where is the configuration stored
+##### Where the configuration stored
 Configuration local to you is stored in `~/.mob`. Configuration
 for a repository is stored in an orphan branch named `mob-meta`.  
 `mob start` creates all configuration needed to run. It is always
 safe to run `mob clean` to remove the repository config and start
 fresh.
 
-#### How do I show the status
+##### Show status
 Run `mob status`
 
-#### How do I change break times, lunch etc
+##### How do I change break times, lunch etc
 Currently you have to run `mob clean` and then `mob start`.
+
+##### Work duration is set to 15 but we're supposed to be in a meeting in 7 minutes
+Run `mob start 7`
 
 
 ## How it works

@@ -48,7 +48,7 @@ impl<'a> Start<'a> {
             }
             State::Working { driver } => {
                 log::warn!("{} has not run mob next", driver);
-                let selections = &["Retry", "Take turn with the risk of loosing work"];
+                let selections = &["Retry", "Take turn with the risk of losing work"];
                 let selection = dialoguer::Select::new()
                     .with_prompt("What do you want to do?")
                     .default(0)
@@ -57,8 +57,7 @@ impl<'a> Start<'a> {
 
                 match selection {
                     0 => return self.run(),
-                    1 => self.start(session)?,
-                    _ => panic!("impossible selection"),
+                    _ => self.start(session)?,
                 }
             }
             State::WaitingForNext {
