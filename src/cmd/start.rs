@@ -86,7 +86,11 @@ impl<'a> Start<'a> {
                 if *is_break {
                     session.last_break = Utc::now();
                 }
-                self.take_over(driver, session.clone())?
+                if !session.drivers.contains(self.config.name.as_str()) {
+                    self.start(session)?
+                } else {
+                    self.take_over(driver, session.clone())?
+                }
             }
         };
 

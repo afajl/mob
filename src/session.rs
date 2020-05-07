@@ -136,6 +136,10 @@ impl Drivers {
         self
     }
 
+    pub fn contains(&self, name: &str) -> bool {
+        return self.0.contains(&name.to_string());
+    }
+
     pub fn next(&self, current: &str) -> Option<String> {
         match self.0.len() {
             0 => panic!("Next driver called before anyone started"),
