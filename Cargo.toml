@@ -6,7 +6,7 @@ license = "MIT OR Apache-2.0"
 edition = "2018"
 categories = ["command-line-utilities"]
 keywords = ["cli"]
-homepage = "https://github.com/afajl/remotemob"
+homepage = "https://github.com/afajl/mob"
 readme = "README.md"
 description = """
 Console tool for streamlining remote mobbing: timer, git sync, breaks and lunch
