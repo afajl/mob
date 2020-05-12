@@ -168,6 +168,10 @@ impl Drivers {
         self.0.remove(index);
         self
     }
+
+    pub fn all(&self) -> Vec<String> {
+        self.0.clone()
+    }
 }
 
 impl Default for Drivers {

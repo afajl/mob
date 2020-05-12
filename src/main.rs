@@ -14,7 +14,7 @@ struct Opts {
 enum SubCommand {
     /// Get current status
     #[clap(name = "status")]
-    Status,
+    Status(cmd::StatusOpts),
 
     /// Clean up mob related stuff from this repo
     #[clap(name = "clean")]
@@ -48,10 +48,7 @@ fn main() -> Result<()> {
         SubCommand::Next => cmd::Next::new(&git, &store, &timer, config).run()?,
         SubCommand::Done => cmd::Done::new(&git, &store, config).run()?,
         SubCommand::Clean => store.clean()?,
-        SubCommand::Status => {
-            let session = store.load()?;
-            println!("{:#?}", session);
-        }
+        SubCommand::Status(opts) => cmd::Status::new(opts, &store, config).run()?,
     };
     Ok(())
 }
