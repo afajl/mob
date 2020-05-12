@@ -97,6 +97,11 @@ impl<'a> Status<'a> {
     }
 
     fn print_drivers(&self, session: &session::Session) {
+        let drivers = session.drivers.all();
+        if drivers.is_empty() {
+            return;
+        }
+
         let current = match &session.state {
             State::Working { driver } => Some(driver),
             State::WaitingForNext {
@@ -117,7 +122,10 @@ impl<'a> Status<'a> {
     }
 
     fn print_break(&self, session: &session::Session) {
-        let settings = session.settings.as_ref().unwrap();
+        let settings = match session.settings {
+            Some(ref s) => s,
+            None => return,
+        };
         let since_last = Utc::now() - session.last_break;
         let break_interval = Duration::minutes(settings.break_interval);
         let to_next = duration::format(break_interval - since_last);
