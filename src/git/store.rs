@@ -103,8 +103,14 @@ impl<'repo> Store for GitCommand<'repo> {
     fn clean(&self) -> Result<(), store::Error> {
         self.run_quietly(&["branch", "-D", SESSION_HEAD])
             .unwrap_or_else(|err| log::trace!("Failed to delete local branch: {}", err));
-        self.run_quietly(&["push", self.remote.as_str(), "--delete", SESSION_HEAD])
-            .unwrap_or_else(|err| log::trace!("Failed to remove remote branch: {}", err));
+        self.run_quietly(&[
+            "push",
+            self.remote.as_str(),
+            "--no-verify",
+            "--delete",
+            SESSION_HEAD,
+        ])
+        .unwrap_or_else(|err| log::trace!("Failed to remove remote branch: {}", err));
         Ok(())
     }
 }
