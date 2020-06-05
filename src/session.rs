@@ -129,9 +129,19 @@ impl Default for Branches {
 pub struct Drivers(Vec<String>);
 
 impl Drivers {
-    pub fn insert(mut self, name: &str) -> Self {
-        if !self.0.contains(&name.to_string()) {
-            self.0.push(name.to_string())
+    pub fn insert(mut self, after: Option<String>, name: &str) -> Self {
+        if self.contains(name) {
+            return self;
+        }
+
+        let index = match after {
+            Some(after) => self.0.iter().position(|existing| existing == &after),
+            None => None,
+        };
+
+        match index {
+            Some(i) => self.0.insert((i + 1) % self.0.len(), name.to_string()),
+            None => self.0.push(name.to_string()),
         }
         self
     }
@@ -213,6 +223,16 @@ impl Default for Session {
     }
 }
 
+impl Session {
+    pub fn get_driver(&self) -> Option<String> {
+        match &self.state {
+            State::Working { driver } => Some(driver.clone()),
+            State::WaitingForNext { next, .. } => next.clone(),
+            _ => None,
+        }
+    }
+}
+
 pub trait Store {
     fn load(&self) -> Result<Session>;
     fn save(&self, session: &Session) -> Result<()>;
@@ -254,3 +274,20 @@ impl<'a> Store for SessionStore<'a> {
         Ok(())
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+
+//     #[test]
+//     fn test_add() {
+//         assert_eq!(add(1, 2), 3);
+//     }
+
+//     #[test]
+//     fn test_bad_add() {
+//         // This assert would fire and test will fail.
+//         // Please note, that private functions can be tested too!
+//         assert_eq!(bad_add(1, 2), 3);
+//     }
+// }

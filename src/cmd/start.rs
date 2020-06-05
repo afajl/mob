@@ -135,12 +135,15 @@ impl<'a> Start<'a> {
         self.git
             .run(&["checkout", session.branches.branch.as_str()])?;
 
+        let previous_driver = session.get_driver();
         let session = session::Session {
             state: State::Working {
                 driver: self.config.name.clone(),
             },
             last_break: self.maybe_reset_break(session.last_break),
-            drivers: session.drivers.insert(self.config.name.as_str()),
+            drivers: session
+                .drivers
+                .insert(previous_driver, self.config.name.as_str()),
             ..session
         };
 
@@ -156,6 +159,8 @@ impl<'a> Start<'a> {
         if !self.git.tree_is_clean()? {
             return Err(anyhow!("Working tree is not clean"));
         }
+
+        let previous_driver = session.get_driver();
 
         let settings = match session.settings {
             Some(settings) => settings,
@@ -179,7 +184,9 @@ impl<'a> Start<'a> {
                 driver: self.config.name.clone(),
             },
             last_break: self.maybe_reset_break(session.last_break),
-            drivers: session.drivers.insert(&self.config.name.as_str()),
+            drivers: session
+                .drivers
+                .insert(previous_driver, &self.config.name.as_str()),
             settings: Some(settings),
             branches,
         };
