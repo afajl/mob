@@ -45,7 +45,7 @@ fn main() -> Result<()> {
 
     match opts.subcmd {
         SubCommand::Start(opts) => cmd::Start::new(&git, &store, &timer, opts, config).run()?,
-        SubCommand::Next => cmd::Next::new(&git, &store, &timer, config).run()?,
+        SubCommand::Next => cmd::Next::new(&git, &store, config).run()?,
         SubCommand::Done => cmd::Done::new(&git, &store, config).run()?,
         SubCommand::Clean => store.clean()?,
         SubCommand::Status(opts) => cmd::Status::new(opts, &store, config).run()?,

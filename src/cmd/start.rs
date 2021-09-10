@@ -1,6 +1,5 @@
 use crate::{config::Config, git, session, timer};
 use anyhow::{anyhow, Result};
-use chrono::{DateTime, Duration, Utc};
 use clap::{self, Clap};
 use session::State;
 
@@ -39,7 +38,7 @@ impl<'a> Start<'a> {
     pub fn run(&self) -> Result<()> {
         let me = &self.config.name;
 
-        let mut session = self.store.load()?;
+        let session = self.store.load()?;
 
         match &session.state {
             State::Stopped => self.start_new(session)?,
@@ -60,31 +59,11 @@ impl<'a> Start<'a> {
                     _ => self.start(session)?,
                 }
             }
-            State::WaitingForNext {
-                next: Some(driver),
-                is_break,
-            } if driver == me.as_str() => {
-                if *is_break {
-                    session.last_break = Utc::now();
-                }
+            State::WaitingForNext { next: Some(driver) } if driver == me.as_str() => {
                 self.start(session)?
             }
-            State::WaitingForNext {
-                next: None,
-                is_break,
-            } => {
-                if *is_break {
-                    session.last_break = Utc::now();
-                }
-                self.start(session)?
-            }
-            State::WaitingForNext {
-                next: Some(driver),
-                is_break,
-            } => {
-                if *is_break {
-                    session.last_break = Utc::now();
-                }
+            State::WaitingForNext { next: None } => self.start(session)?,
+            State::WaitingForNext { next: Some(driver) } => {
                 if !session.drivers.contains(self.config.name.as_str()) {
                     self.start(session)?
                 } else {
@@ -140,7 +119,6 @@ impl<'a> Start<'a> {
             state: State::Working {
                 driver: self.config.name.clone(),
             },
-            last_break: self.maybe_reset_break(session.last_break),
             drivers: session
                 .drivers
                 .insert(previous_driver, self.config.name.as_str()),
@@ -183,7 +161,6 @@ impl<'a> Start<'a> {
             state: State::Working {
                 driver: self.config.name.clone(),
             },
-            last_break: self.maybe_reset_break(session.last_break),
             drivers: session
                 .drivers
                 .insert(previous_driver, &self.config.name.as_str()),
@@ -322,14 +299,6 @@ impl<'a> Start<'a> {
             }
         };
         Ok(())
-    }
-
-    fn maybe_reset_break(&self, last_break: DateTime<Utc>) -> DateTime<Utc> {
-        if Utc::now() - last_break > Duration::hours(8) {
-            log::trace!("resetting last brake after 8 hours");
-            return Utc::now();
-        }
-        last_break
     }
 
     fn start_timer(&self, minutes: i64, next: Option<String>) -> Result<()> {

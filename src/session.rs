@@ -1,27 +1,15 @@
 use crate::git;
 use anyhow::{Error, Result};
-use chrono::NaiveTime;
-use chrono::{DateTime, Utc};
 use dialoguer::Input;
 use serde::{Deserialize, Serialize};
 use std::default::Default;
 
-const TIME_FORMAT: &str = "%H:%M";
-
 type DurationMinutes = i64;
-
-fn validate_clock(text: &str) -> Result<(), chrono::ParseError> {
-    NaiveTime::parse_from_str(text, TIME_FORMAT).map(|_| ())
-}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Settings {
     pub commit_message: String,
     pub work_duration: DurationMinutes,
-    pub break_duration: DurationMinutes,
-    pub break_interval: DurationMinutes,
-    pub lunch_start: String,
-    pub lunch_end: String,
 }
 
 impl Default for Settings {
@@ -29,10 +17,6 @@ impl Default for Settings {
         Self {
             commit_message: "mob sync [skip ci]".into(),
             work_duration: 10,
-            break_interval: 55,
-            break_duration: 5,
-            lunch_start: "11:30".into(),
-            lunch_end: "12:30".into(),
         }
     }
 }
@@ -51,35 +35,9 @@ impl Settings {
             .default(default.work_duration)
             .interact()?;
 
-        let break_interval = Input::new()
-            .with_prompt("Break interval")
-            .default(default.break_interval)
-            .interact()?;
-
-        let break_duration = Input::new()
-            .with_prompt("Break duration")
-            .default(default.break_duration)
-            .interact()?;
-
-        let lunch_start = Input::new()
-            .with_prompt("Lunch start")
-            .default(default.lunch_start)
-            .validate_with(validate_clock)
-            .interact()?;
-
-        let lunch_end = Input::new()
-            .with_prompt("Lunch end")
-            .default(default.lunch_end)
-            .validate_with(validate_clock)
-            .interact()?;
-
         let config = Self {
             commit_message,
             work_duration,
-            break_interval,
-            break_duration,
-            lunch_start,
-            lunch_end,
         };
         Ok(config)
     }
@@ -193,18 +151,12 @@ impl Default for Drivers {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum State {
     Stopped,
-    Working {
-        driver: String,
-    },
-    WaitingForNext {
-        next: Option<String>,
-        is_break: bool,
-    },
+    Working { driver: String },
+    WaitingForNext { next: Option<String> },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Session {
-    pub last_break: DateTime<Utc>,
     pub drivers: Drivers,
     pub branches: Branches,
     pub settings: Option<Settings>,
@@ -214,7 +166,6 @@ pub struct Session {
 impl Default for Session {
     fn default() -> Self {
         Self {
-            last_break: Utc::now(),
             drivers: Drivers::default(),
             branches: Branches::default(),
             settings: None,

@@ -82,6 +82,7 @@ impl<'a> Done<'a> {
             session.branches.branch.as_str(),
         ])?;
 
+        // Delete mob branch
         self.git
             .run(&["branch", "-D", session.branches.branch.as_str()])?;
         self.git.run(&[

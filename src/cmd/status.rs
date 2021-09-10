@@ -1,6 +1,5 @@
-use crate::{config::Config, duration, session};
+use crate::{config::Config, session};
 use anyhow::Result;
-use chrono::{Duration, Utc};
 use clap::{self, Clap};
 use console::style;
 use session::State;
@@ -50,8 +49,6 @@ impl<'a> Status<'a> {
                 let help = "Run 'mob start' to start a new session";
                 println!("✋ {}", style("Stopped").red());
                 println!("   {}", style(help).cyan());
-
-                self.print_break(session);
             }
             State::Working { driver } => {
                 let driver = if driver == &me {
@@ -61,28 +58,20 @@ impl<'a> Status<'a> {
                 };
                 println!("🚗 {} {}", driver, style("driving").green(),);
                 println!("   {}", style("Run 'mob next' when finished").cyan());
-                self.print_break(session);
                 self.print_branches(&session.branches);
             }
-            State::WaitingForNext { next, is_break } => {
+            State::WaitingForNext { next } => {
                 let next = match next {
                     Some(driver) if driver == &me => "You",
                     Some(ref driver) => driver,
                     None => "Anyone",
                 };
 
-                if *is_break {
-                    let help = "should run 'mob start' when the break is over";
-                    println!("☕️ {}", style("Break").blue());
-                    println!("   {} {}", next, style(help).cyan());
-                } else {
-                    println!(
-                        "💤 {} for {} to run 'mob start'",
-                        style("Waiting").blue(),
-                        next
-                    );
-                    self.print_break(session);
-                }
+                println!(
+                    "💤 {} for {} to run 'mob start'",
+                    style("Waiting").blue(),
+                    next
+                );
                 self.print_branches(&session.branches);
             }
         }
@@ -119,16 +108,5 @@ impl<'a> Status<'a> {
 
             println!(" {} {}", style(prefix).red(), driver);
         }
-    }
-
-    fn print_break(&self, session: &session::Session) {
-        let settings = match session.settings {
-            Some(ref s) => s,
-            None => return,
-        };
-        let since_last = Utc::now() - session.last_break;
-        let break_interval = Duration::minutes(settings.break_interval);
-        let to_next = duration::format(break_interval - since_last);
-        println!("\n☕️ break in {}", style(to_next.human()).green());
     }
 }

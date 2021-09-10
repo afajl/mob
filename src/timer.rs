@@ -62,7 +62,7 @@ fn asci_time(time: &str) -> Vec<&str> {
                 58 => FONT[10], // :
                 32 => FONT[11], // <space>
                 48..=57 => FONT[d - 48],
-                _ => panic!(format!("dont know what to do with '{}' {}", c, d)),
+                _ => panic!("dont know what to do with '{}' {}", c, d),
             }
         })
         .collect()
