@@ -7,7 +7,7 @@ use env_logger::{
 use log::Level;
 
 pub fn init(level: &str) {
-    let mut builder = env_logger::from_env(Env::default().default_filter_or(level));
+    let mut builder = env_logger::Builder::from_env(Env::default().default_filter_or(level));
 
     builder.format(|f, record| {
         use std::io::Write;

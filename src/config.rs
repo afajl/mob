@@ -19,13 +19,12 @@ pub struct Config {
 impl Config {
     pub fn ask() -> Result<Config> {
         log::info!("It seems like this is the first time you run mob. Welcome!");
-        log::info!("I need some info:");
 
         let default = Config::default();
 
         let name = Input::new()
             .with_prompt("Your name")
-            .default(whoami::user())
+            .default(whoami::realname())
             .interact()?;
 
         let remote = Input::new()
