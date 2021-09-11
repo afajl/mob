@@ -38,6 +38,10 @@ impl<'a> Start<'a> {
     pub fn run(&self) -> Result<()> {
         let me = &self.config.name;
 
+        if !self.git.tree_is_clean()? {
+            return Err(anyhow!("Working tree is not clean"));
+        }
+
         let session = self.store.load()?;
 
         match &session.state {
@@ -98,10 +102,6 @@ impl<'a> Start<'a> {
     }
 
     fn start(&self, session: session::Session) -> Result<()> {
-        if !self.git.tree_is_clean()? {
-            return Err(anyhow!("Working tree is not clean"));
-        }
-
         self.git
             .run(&["checkout", session.branches.base_branch.as_str()])?;
         self.git.run(&["fetch", "--all", "--prune"])?;
@@ -134,10 +134,6 @@ impl<'a> Start<'a> {
     }
 
     fn start_new(&self, session: session::Session) -> Result<()> {
-        if !self.git.tree_is_clean()? {
-            return Err(anyhow!("Working tree is not clean"));
-        }
-
         let previous_driver = session.get_driver();
 
         let settings = match session.settings {
