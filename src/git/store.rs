@@ -1,5 +1,4 @@
 use super::*;
-use crate::session::Session;
 
 const SESSION_FILENAME: &str = "data";
 const SESSION_HEAD: &str = "mob-meta";
@@ -10,9 +9,8 @@ pub enum Error {
     #[error("failure pushing to origin: `{0}`")]
     Conflict(#[from] anyhow::Error),
 
-    #[error("unable to deserialize data `{0}`")]
-    Format(#[from] serde_json::Error),
-
+    // #[error("unable to deserialize data `{0}`")]
+    // Format(#[from] serde_json::Error),
     #[error("unknown error")]
     Other(#[from] git2::Error),
 
@@ -21,20 +19,18 @@ pub enum Error {
 }
 
 pub trait Store {
-    fn load(&self) -> Result<Session, Error>;
-    fn save(&self, data: &Session) -> Result<(), Error>;
+    fn load(&self) -> Result<Vec<u8>, Error>;
+    fn save(&self, data: &[u8]) -> Result<(), Error>;
     fn clean(&self) -> Result<(), Error>;
 }
 
 impl<'repo> Store for GitCommand<'repo> {
-    fn save(&self, data: &Session) -> Result<(), store::Error> {
-        let json = serde_json::to_vec_pretty(data)?;
-
+    fn save(&self, data: &[u8]) -> Result<(), store::Error> {
         let filename = SESSION_FILENAME;
 
         let commit = CommitFile {
             filename,
-            data: json.as_slice(),
+            data,
             reference: SESSION_HEAD,
             message: COMMIT_MESSAGE,
         };
@@ -50,7 +46,7 @@ impl<'repo> Store for GitCommand<'repo> {
         .map_err(store::Error::Conflict) // TODO: should check for "rejected" in output
     }
 
-    fn load(&self) -> Result<Session, store::Error> {
+    fn load(&self) -> Result<Vec<u8>, store::Error> {
         self.run_quietly(&["branch", "-D", SESSION_HEAD])
             .unwrap_or_else(|err| {
                 log::trace!(
@@ -95,9 +91,7 @@ impl<'repo> Store for GitCommand<'repo> {
             Some(blob) => blob,
             None => return Err(store::Error::Missing),
         };
-        let blob = blob.content();
-
-        serde_json::from_slice(blob).map_err(store::Error::Format)
+        Ok(blob.content().into())
     }
 
     fn clean(&self) -> Result<(), store::Error> {

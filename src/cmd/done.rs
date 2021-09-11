@@ -100,6 +100,7 @@ impl<'a> Done<'a> {
             state: State::Stopped,
             ..session
         };
-        self.store.save(&session)
+        self.store.save(session)?;
+        Ok(())
     }
 }

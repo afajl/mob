@@ -125,12 +125,12 @@ impl<'a> Start<'a> {
             ..session
         };
 
-        self.store.save(&session)?;
+        let next_driver = session.drivers.next(&self.config.name.as_str());
+        let work_duration = session.settings.as_ref().unwrap().work_duration;
 
-        self.start_timer(
-            session.settings.unwrap().work_duration,
-            session.drivers.next(&self.config.name.as_str()),
-        )
+        self.store.save(session)?;
+
+        self.start_timer(work_duration, next_driver)
     }
 
     fn start_new(&self, session: session::Session) -> Result<()> {
@@ -168,7 +168,7 @@ impl<'a> Start<'a> {
             branches,
         };
 
-        self.store.save(&session)?;
+        self.store.save(session.clone())?;
 
         self.start_timer(
             session.settings.unwrap().work_duration,

@@ -66,6 +66,3 @@ impl<'a> Next<'a> {
         Ok(())
     }
 }
-
-#[cfg(test)]
-mod tests {}
