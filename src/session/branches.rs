@@ -16,6 +16,11 @@ impl Branches {
         }
     }
     pub fn ask(default: Branches) -> Result<Branches> {
+        let default_base_branch = Branches::default().base_branch;
+        if default.base_branch != default_base_branch {
+            log::info!("Note that you are not on {}", default_base_branch)
+        }
+
         let base_branch = Input::new()
             .with_prompt("Base branch")
             .default(default.base_branch)

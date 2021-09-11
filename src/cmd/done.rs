@@ -42,7 +42,7 @@ impl<'a> Done<'a> {
         if !self.git.tree_is_clean()? {
             log::info!("Working tree is dirty, committing first");
 
-            if !self.git.on_branch(session.branches.branch.as_str())? {
+            if !self.on_branch(session.branches.branch.as_str())? {
                 log::error!(
                     "You must be on branch {} to run done",
                     session.branches.branch.as_str()
@@ -102,5 +102,12 @@ impl<'a> Done<'a> {
         };
         self.store.save(session)?;
         Ok(())
+    }
+
+    fn on_branch(&self, branch: &str) -> Result<bool> {
+        Ok(match self.git.current_branch()? {
+            Some(name) => name == branch,
+            None => false,
+        })
     }
 }

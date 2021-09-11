@@ -12,7 +12,7 @@ pub trait Git {
     fn run(&self, args: &[&str]) -> Result<()>;
     fn tree_is_clean(&self) -> Result<bool>;
     fn has_branch(&self, branch: &str) -> Result<bool>;
-    fn on_branch(&self, branch: &str) -> Result<bool>;
+    fn current_branch(&self) -> Result<Option<String>>;
 }
 
 #[derive(Debug)]
@@ -138,13 +138,7 @@ impl<'repo> Git for GitCommand<'repo> {
         }
     }
 
-    fn on_branch(&self, branch: &str) -> Result<bool> {
-        Ok(match self.repo.head()?.shorthand() {
-            Some(name) => {
-                dbg!(&name, &branch);
-                name == branch
-            }
-            None => false,
-        })
+    fn current_branch(&self) -> Result<Option<String>> {
+        return Ok(self.repo.head()?.shorthand().map(|t| String::from(t)));
     }
 }

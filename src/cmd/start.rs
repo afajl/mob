@@ -141,11 +141,27 @@ impl<'a> Start<'a> {
             None => session::Settings::ask()?,
         };
 
-        let branches = session::Branches::ask(session.branches)?;
+        let branches = session::Branches {
+            base_branch: self
+                .git
+                .current_branch()
+                .unwrap_or(None)
+                .unwrap_or(session.branches.base_branch),
+            ..session.branches
+        };
+
+        let branches = session::Branches::ask(branches)?;
 
         let remote_branches = branches.with_remote(&self.config.remote);
 
         self.git.run(&["fetch", "--all", "--prune"])?;
+
+        if !self.git.has_branch(remote_branches.branch.as_str())? {
+            return Err(anyhow!(
+                "You need to push your branch `{}` first",
+                branches.base_branch
+            ));
+        }
 
         self.git.run(&["checkout", branches.base_branch.as_str()])?;
         self.git
