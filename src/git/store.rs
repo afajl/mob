@@ -2,7 +2,7 @@ use super::*;
 
 const SESSION_FILENAME: &str = "data";
 const SESSION_HEAD: &str = "mob-meta";
-const COMMIT_MESSAGE: &str = "update [skip ci]";
+const COMMIT_MESSAGE: &str = "mob metadata changed [skip ci]";
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
