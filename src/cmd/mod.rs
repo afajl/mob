@@ -1,8 +1,10 @@
 mod done;
 mod next;
+mod order;
 mod start;
 mod status;
 pub use done::Done;
 pub use next::Next;
+pub use order::Order;
 pub use start::{Start, StartOpts};
 pub use status::{Status, StatusOpts};

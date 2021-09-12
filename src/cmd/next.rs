@@ -62,6 +62,14 @@ impl<'a> Next<'a> {
             None => "anyone!",
         };
 
+        let session = session::Session {
+            state: State::WaitingForNext {
+                next: next_driver.clone(),
+            },
+            ..session
+        };
+
+        self.store.save(session)?;
         log::info!("Next driver: {}", next_driver_name);
         Ok(())
     }

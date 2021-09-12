@@ -4,6 +4,10 @@ use serde::{Deserialize, Serialize};
 pub struct Drivers(Vec<String>);
 
 impl Drivers {
+    pub fn new(drivers: Vec<String>) -> Self {
+        Drivers(drivers)
+    }
+
     pub fn insert(mut self, after: Option<String>, name: &str) -> Self {
         if self.contains(name) {
             return self;
