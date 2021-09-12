@@ -11,6 +11,7 @@ readme = "README.md"
 description = """
 Console tool for streamlining remote mobbing: timer, git sync, breaks and lunch
 """
+include = ["src/**/*", "README.md"]
 
 [[bin]]
 name = "mob"
