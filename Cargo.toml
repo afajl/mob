@@ -9,7 +9,7 @@ keywords = ["cli"]
 homepage = "https://github.com/afajl/mob"
 readme = "README.md"
 description = """
-Console tool for streamlining remote mobbing: timer, git sync, breaks and lunch
+Console tool for streamlining remote mobbing
 """
 
 [[bin]]
