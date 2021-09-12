@@ -93,7 +93,7 @@ impl Default for Config {
 
 pub fn load() -> Result<Config> {
     let config: Config = confy::load_path(config_path()).map_err(anyhow::Error::from)?;
-    if config.name == "" {
+    if config.name.is_empty() {
         let config = Config::ask()?;
         confy::store_path(config_path(), &config)?;
         log::info!("Stored config to {}", config_path().to_str().unwrap());

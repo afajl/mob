@@ -125,7 +125,7 @@ impl<'a> Start<'a> {
             ..session
         };
 
-        let next_driver = session.drivers.next(&self.config.name.as_str());
+        let next_driver = session.drivers.next(self.config.name.as_str());
         let work_duration = session.settings.as_ref().unwrap().work_duration;
 
         self.store.save(session)?;
@@ -175,7 +175,7 @@ impl<'a> Start<'a> {
             },
             drivers: session
                 .drivers
-                .insert(previous_driver, &self.config.name.as_str()),
+                .insert(previous_driver, self.config.name.as_str()),
             settings: Some(settings),
             branches,
         };
@@ -184,7 +184,7 @@ impl<'a> Start<'a> {
 
         self.start_timer(
             session.settings.unwrap().work_duration,
-            session.drivers.next(&self.config.name.as_str()),
+            session.drivers.next(self.config.name.as_str()),
         )
     }
 

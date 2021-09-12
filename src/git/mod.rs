@@ -71,7 +71,7 @@ impl<'repo> GitCommand<'repo> {
         Signature::now(name.as_str(), email.as_str())
     }
 
-    pub fn create_commit<'a>(&self, commit: CommitFile<'a>) -> Result<git2::Oid, Error> {
+    pub fn create_commit(&self, commit: CommitFile) -> Result<git2::Oid, Error> {
         let oid = self.repo.blob(commit.data)?;
 
         let mut tree = self.repo.treebuilder(None)?;
@@ -139,6 +139,6 @@ impl<'repo> Git for GitCommand<'repo> {
     }
 
     fn current_branch(&self) -> Result<Option<String>> {
-        return Ok(self.repo.head()?.shorthand().map(|t| String::from(t)));
+        return Ok(self.repo.head()?.shorthand().map(String::from));
     }
 }

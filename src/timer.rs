@@ -26,7 +26,7 @@ impl<'a> ConsoleTimer<'a> {
 
 impl<'a> Timer for ConsoleTimer<'a> {
     fn start(&self, title: &str, duration: chrono::Duration, message: &str) -> Result<()> {
-        let mut time_left = duration.clone();
+        let mut time_left = duration;
         let second = chrono::Duration::seconds(1);
 
         let term = Term::stdout();

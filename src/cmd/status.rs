@@ -34,8 +34,6 @@ impl<'a> Status<'a> {
             return Ok(());
         }
 
-        let session = self.store.load()?;
-
         self.print_status(&session);
         self.print_drivers(&session);
 

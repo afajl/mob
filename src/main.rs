@@ -1,5 +1,4 @@
 use anyhow::Result;
-use clap;
 use clap::Clap;
 use remotemob::{cmd, config, emoji_logger, git, session, session::Store, timer};
 
@@ -16,7 +15,11 @@ enum SubCommand {
     #[clap(name = "status")]
     Status(cmd::StatusOpts),
 
-    /// Clean up mob related stuff from this repo
+    /// Reorder drivers
+    #[clap(name = "order")]
+    Order,
+
+    /// Clean up all mob related stuff from this repo
     #[clap(name = "clean")]
     Clean,
 
@@ -49,6 +52,7 @@ fn main() -> Result<()> {
         SubCommand::Done => cmd::Done::new(&git, &store, config).run()?,
         SubCommand::Clean => store.clean()?,
         SubCommand::Status(opts) => cmd::Status::new(opts, &store, config).run()?,
+        SubCommand::Order => cmd::Order::new(&store).run()?,
     };
     Ok(())
 }

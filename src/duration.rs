@@ -19,7 +19,7 @@ impl FormattedDuration {
         } else if m > 0 {
             format!("{} minutes", m)
         } else {
-            format!("less than a minute")
+            "less than a minute".to_string()
         }
     }
 

@@ -26,7 +26,7 @@ impl Drivers {
     }
 
     pub fn contains(&self, name: &str) -> bool {
-        return self.0.contains(&name.to_string());
+        self.0.contains(&name.to_string())
     }
 
     pub fn next(&self, current: &str) -> Option<String> {
@@ -41,9 +41,9 @@ impl Drivers {
                         let next_index = (index + 1) % self.0.len();
                         self.0[next_index].clone()
                     })
-                    .expect(
-                        format!("Could not find current driver {} in drivers", current).as_str(),
-                    ),
+                    .unwrap_or_else(|| {
+                        panic!("Could not find current driver {} in drivers", current)
+                    }),
             ),
         }
     }
@@ -53,7 +53,7 @@ impl Drivers {
             .0
             .iter()
             .position(|n| n == name)
-            .expect(format!("Trying to remove {} that is not a driver", name).as_str());
+            .unwrap_or_else(|| panic!("Trying to remove {} that is not a driver", name));
         self.0.remove(index);
         self
     }

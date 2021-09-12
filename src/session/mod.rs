@@ -1,5 +1,6 @@
 mod branches;
 mod drivers;
+#[allow(clippy::module_inception)]
 mod session;
 mod session_store;
 mod session_v0;
