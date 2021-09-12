@@ -8,6 +8,14 @@ use std::path;
 
 const CONFIG_FILE: &str = ".mob";
 
+static NOTIFY_CMD: Option<&str> = if cfg!(target_os = "macos") {
+    Some("/usr/bin/osascript -e 'display notification \"MESSAGE\"'")
+} else if cfg!(target_os = "linux") {
+    Some("notify-send 'Mob' 'MESSAGE'")
+} else {
+    None
+};
+
 #[derive(Serialize, Deserialize)]
 pub struct Config {
     pub name: String,
@@ -82,11 +90,10 @@ impl Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            //name: whoami::user(),
             name: "".to_string(),
             remote: "origin".to_string(),
             say_command: Some("say 'MESSAGE'".into()),
-            notify_command: Some("/usr/bin/osascript -e 'display notification \"MESSAGE\"'".into()),
+            notify_command: NOTIFY_CMD.map(String::from),
         }
     }
 }
