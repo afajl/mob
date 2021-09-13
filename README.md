@@ -19,7 +19,7 @@ A console tool to work in a remote mob (or pair) with git.
       * [How do I remove all traces of `mob` from a repo?](#how-do-i-remove-all-traces-of-mob-from-a-repo)
       * [Where is the configuration stored?](#where-is-the-configuration-stored)
       * [How do I show current status?](#how-do-i-show-current-status)
-      * [Work duration is set to 15 but we're supposed to be in a meeting in 7 minutes](#work-duration-is-set-to-15-but-were-supposed-to-be-in-a-meeting-in-7-minutes)
+      * [Work duration is set to 15 but we must stop for a meeting in 7 minutes](#work-duration-is-set-to-15-but-we-must-stop-for-a-meeting-in-7-minutes)
 * [How it works](#how-it-works)
 * [Thanks](#thanks)
 
@@ -58,7 +58,7 @@ fresh.
 ##### How do I show current status?
 Run `mob status`
 
-##### Work duration is set to 15 but we're supposed to be in a meeting in 7 minutes
+##### Work duration is set to 15 but we must stop for a meeting in 7 minutes
 Run `mob start 7`
 
 

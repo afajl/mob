@@ -11,7 +11,7 @@ struct Opts {
 
 #[derive(Clap, Debug)]
 enum SubCommand {
-    /// Get current status
+    /// Show status
     #[clap(name = "status")]
     Status(cmd::StatusOpts),
 
@@ -31,7 +31,7 @@ enum SubCommand {
     #[clap(name = "next")]
     Next,
 
-    /// Stop session and merge branch
+    /// Stop session and stage all changes to commit
     #[clap(name = "done")]
     Done,
 }
