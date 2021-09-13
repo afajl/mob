@@ -156,7 +156,7 @@ impl<'a> Start<'a> {
 
         self.git.run(&["fetch", "--all", "--prune"])?;
 
-        if !self.git.has_branch(remote_branches.branch.as_str())? {
+        if !self.git.has_branch(remote_branches.base_branch.as_str())? {
             return Err(anyhow!(
                 "You need to push your branch `{}` first",
                 branches.base_branch
