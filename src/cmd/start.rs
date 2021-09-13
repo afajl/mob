@@ -102,17 +102,15 @@ impl<'a> Start<'a> {
     }
 
     fn start(&self, session: session::Session) -> Result<()> {
-        self.git
-            .run(&["checkout", session.branches.base_branch.as_str()])?;
         self.git.run(&["fetch", "--all", "--prune"])?;
 
-        if self.git.has_branch(session.branches.branch.as_str())? {
-            self.git
-                .run(&["branch", "-D", session.branches.branch.as_str()])?;
-        }
-
-        self.git
-            .run(&["checkout", session.branches.branch.as_str()])?;
+        let remote_branches = session.branches.with_remote(&self.config.remote);
+        self.git.run(&[
+            "switch",
+            "--force-create",
+            session.branches.branch.as_str(),
+            remote_branches.branch.as_str(),
+        ])?;
 
         let previous_driver = session.get_driver();
         let session = session::Session {
@@ -141,7 +139,7 @@ impl<'a> Start<'a> {
             None => session::Settings::ask()?,
         };
 
-        let branches = session::Branches {
+        let default_branches = session::Branches {
             base_branch: self
                 .git
                 .current_branch()
@@ -150,7 +148,7 @@ impl<'a> Start<'a> {
             ..session.branches
         };
 
-        let branches = session::Branches::ask(branches)?;
+        let branches = session::Branches::ask(default_branches)?;
 
         let remote_branches = branches.with_remote(&self.config.remote);
 
