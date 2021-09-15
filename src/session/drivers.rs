@@ -19,7 +19,13 @@ impl Drivers {
         };
 
         match index {
-            Some(i) => self.0.insert((i + 1) % self.0.len(), name.to_string()),
+            Some(i) => {
+                if i + 1 > self.0.len() {
+                    self.0.push(name.to_string())
+                } else {
+                    self.0.insert(i + 1, name.to_string())
+                }
+            }
             None => self.0.push(name.to_string()),
         }
         self
@@ -66,5 +72,30 @@ impl Drivers {
 impl Default for Drivers {
     fn default() -> Self {
         Drivers(vec![])
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn insert_at_end() {
+        let drivers = Drivers::new(vec!["a".to_string(), "b".to_string()]);
+        let driver_added = drivers.insert(Some("b".to_string()), "c");
+        assert_eq!(
+            driver_added.all(),
+            vec!["a".to_string(), "b".to_string(), "c".to_string()]
+        );
+    }
+
+    #[test]
+    fn insert_in_middle() {
+        let drivers = Drivers::new(vec!["a".to_string(), "b".to_string()]);
+        let driver_added = drivers.insert(Some("a".to_string()), "c");
+        assert_eq!(
+            driver_added.all(),
+            vec!["a".to_string(), "c".to_string(), "b".to_string()]
+        );
     }
 }
