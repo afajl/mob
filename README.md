@@ -32,12 +32,10 @@ cargo install remotemob
 
 
 ## Usage 
-- `mob start` creates a new session or takes over from the
-  previous driver. It will ask about
-  branches and work interval if it needs.
-- `mob next` hands over to the next driver.
-- `mob done` squashes the feature branch to staging on the base branch
-  (default master) and removes it.
+- `mob start` creates a new feature branch or syncs the branch from the
+  previous driver. 
+- `mob next` commits all changes to the feature branch and hands over to the next driver.
+- `mob done` stages all changes on the feature branch for commit on the base branch (normally master).
 
 Run `mob` for help on more commands.
 
