@@ -16,9 +16,8 @@ impl Branches {
         }
     }
     pub fn ask(default: Branches) -> Result<Branches> {
-        let default_base_branch = Branches::default().base_branch;
-        if default.base_branch != default_base_branch {
-            log::info!("Note that you are not on {}", default_base_branch)
+        if default.base_branch != "master" || default.base_branch != "main" {
+            log::info!("Note that you are not on main or master")
         }
 
         let base_branch = Input::new()
@@ -41,7 +40,7 @@ impl Branches {
 impl Default for Branches {
     fn default() -> Self {
         Self {
-            base_branch: "master".to_string(),
+            base_branch: "main".to_string(),
             branch: "mob-session".to_string(),
         }
     }
