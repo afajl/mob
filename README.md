@@ -26,6 +26,7 @@ A console tool to work in a remote mob (or pair) with git.
 <!-- vim-markdown-toc -->
 
 ## How to install
+Install [rust](https://www.rust-lang.org/tools/install) and run:
 ```bash
 cargo install remotemob
 ```
