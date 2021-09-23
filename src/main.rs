@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::Clap;
-use remotemob::{cmd, config, emoji_logger, git, session, session::Store, timer};
+use remotemob::{cmd, config, emoji_logger, git, session, session::Store};
 
 #[derive(Clap)]
 #[clap(version = clap::crate_version!(), author = clap::crate_authors!())]
@@ -42,12 +42,11 @@ fn main() -> Result<()> {
 
     let config = config::load()?;
 
-    let timer = timer::ConsoleTimer::new(config.commands());
     let git = git::GitCommand::new(None, config.remote.clone())?;
     let store = session::SessionStore::new(&git);
 
     match opts.subcmd {
-        SubCommand::Start(opts) => cmd::Start::new(&git, &store, &timer, opts, config).run()?,
+        SubCommand::Start(opts) => cmd::Start::new(&git, &store, opts, config).run()?,
         SubCommand::Next => cmd::Next::new(&git, &store, config).run()?,
         SubCommand::Done => cmd::Done::new(&git, &store, config).run()?,
         SubCommand::Clean => store.clean()?,

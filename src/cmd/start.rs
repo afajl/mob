@@ -1,4 +1,4 @@
-use crate::{config::Config, git, session, timer};
+use crate::{command, config::Config, git, session, timer};
 use anyhow::{anyhow, Result};
 use clap::{self, Clap};
 use session::State;
@@ -13,7 +13,6 @@ pub struct StartOpts {
 pub struct Start<'a> {
     git: &'a dyn git::Git,
     store: &'a dyn session::Store,
-    timer: &'a dyn timer::Timer,
     opts: StartOpts,
     config: Config,
 }
@@ -22,14 +21,12 @@ impl<'a> Start<'a> {
     pub fn new(
         git: &'a impl git::Git,
         store: &'a impl session::Store,
-        timer: &'a impl timer::Timer,
         opts: StartOpts,
         config: Config,
     ) -> Start<'a> {
         Self {
             git,
             store,
-            timer,
             opts,
             config,
         }
@@ -37,7 +34,7 @@ impl<'a> Start<'a> {
 
     pub fn run(&self) -> Result<()> {
         let me = &self.config.name;
-
+        command::run_hook(&self.config.hooks.before_start, me, "")?;
         if !self.git.tree_is_clean()? {
             return Err(anyhow!("Working tree is not clean"));
         }
@@ -128,7 +125,8 @@ impl<'a> Start<'a> {
 
         self.store.save(session)?;
 
-        self.start_timer(work_duration, next_driver)
+        let next_driver_name = next_driver.unwrap_or_else(|| String::from("anyone"));
+        self.start_timer(work_duration, &next_driver_name)
     }
 
     fn start_new(&self, session: session::Session) -> Result<()> {
@@ -180,10 +178,7 @@ impl<'a> Start<'a> {
 
         self.store.save(session.clone())?;
 
-        self.start_timer(
-            session.settings.unwrap().work_duration,
-            session.drivers.next(self.config.name.as_str()),
-        )
+        self.start_timer(session.settings.unwrap().work_duration, "anyone")
     }
 
     fn setup_branch(
@@ -311,23 +306,13 @@ impl<'a> Start<'a> {
         Ok(())
     }
 
-    fn start_timer(&self, minutes: i64, next: Option<String>) -> Result<()> {
+    fn start_timer(&self, minutes: i64, next_driver: &str) -> Result<()> {
         let minutes = self.opts.minutes.unwrap_or(minutes);
 
-        let timer_message = format!(
-            "mob next {}",
-            match next {
-                Some(name) => name,
-                None => "".to_string(),
-            }
-        );
-
-        self.timer.start(
-            "Your turn",
-            chrono::Duration::minutes(minutes),
-            timer_message.as_str(),
-        )?;
+        let current_driver = self.config.name.as_str();
+        command::run_hook(&self.config.hooks.after_start, current_driver, next_driver)?;
+        timer::start("Your turn", chrono::Duration::minutes(minutes))?;
         log::info!("Done. Run mob next");
-        Ok(())
+        command::run_hook(&self.config.hooks.after_timer, current_driver, next_driver)
     }
 }

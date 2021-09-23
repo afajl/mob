@@ -1,4 +1,5 @@
 use anyhow::Error;
+use anyhow::Result;
 use std::borrow::Cow;
 use std::ffi::OsStr;
 use std::fmt;
@@ -6,6 +7,9 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::process;
 use thiserror::Error;
+
+use crate::config;
+use crate::os;
 
 /// The decoded output after running a command.
 pub struct Output {
@@ -136,4 +140,19 @@ impl<'name> Command<'name> {
 
         Ok(output)
     }
+}
+
+pub fn run_hook(hook: &Option<String>, current_driver: &str, next_driver: &str) -> Result<()> {
+    let cmd = if let Some(cmd) = hook {
+        cmd
+    } else {
+        return Ok(());
+    };
+
+    let sh = Command::new(os::command("sh"));
+
+    let cmd = cmd.replace(config::VAR_CURRENT_DRIVER, current_driver);
+    let cmd = cmd.replace(config::VAR_NEXT_DRIVER, next_driver);
+
+    sh.run_checked(&["-c", cmd.as_str()])
 }

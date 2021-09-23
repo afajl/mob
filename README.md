@@ -20,6 +20,7 @@ A console tool to work in a remote mob (or pair) with git.
       * [Where is the configuration stored?](#where-is-the-configuration-stored)
       * [How do I show current status?](#how-do-i-show-current-status)
       * [Work duration is set to 15 but we must stop for a meeting in 7 minutes](#work-duration-is-set-to-15-but-we-must-stop-for-a-meeting-in-7-minutes)
+* [Hooks](#hooks)
 * [How it works](#how-it-works)
 * [Thanks](#thanks)
 
@@ -63,14 +64,46 @@ Run `mob status`
 Run `mob start 7`
 
 
+## Hooks
+You can add hooks to your configuration in `~/.mob` to notify you
+when your turn is over or to take over screen sharing when you
+start. 
+```language: toml
+...
+[hooks]
+after_start="take_screen.sh"
+after_timer="beep"
+```
+
+
+Hooks are executed by a shell and can contain two
+variables:
+- `CURRENT_DRIVER`: Always the name you configured in `~/.mob`
+- `NEXT_DRIVER`: Next driver or `anyone` if you are the first in
+  a session. It is empty on all `before_*` hooks.
+
+The available hooks are:
+- `before_start`: Run as soon as possible when you run `mob start`, before checking that it is your turn 
+   or that your working directory is clean.
+- `after_start`: Right after you've started a session with `mob start` but before the timer started. 
+   This is a good hook for taking over the screen. 
+- `after_timer`: Run when your turn ended. The first time you run
+   `mob start` it tries to find commands to play a sound and show
+   a desktop notification.
+- `before_next`: Before running mob next, `NEXT_DRIVER` is not available.
+- `after_next`: Before running mob next, `NEXT_DRIVER` is either
+   a name or `anyone`. 
+- `before_done`: Before the squashing and deleting branches.
+- `after_done`: After done has been run, `NEXT_DRIVER` is not available.
+
+
 ## How it works
 `mob` uses an orphan branch called `mob-meta` to save session
 state and settings. You can view the session content with `mob
 status` and delete it with `mob clean`.
 
 The session can be in 3 different states:
-
-![mob states](https://github.com/afajl/mob/raw/master/state.svg)
+![mob states](https://github.com/afajl/mob/raw/master/assets/state.svg)
 
 
 ## Thanks

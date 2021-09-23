@@ -1,4 +1,4 @@
-use crate::{config::Config, git, session};
+use crate::{command, config::Config, git, session};
 use anyhow::Result;
 use session::State;
 
@@ -15,6 +15,7 @@ impl<'a> Next<'a> {
 
     pub fn run(&self) -> Result<()> {
         let me = &self.config.name;
+        command::run_hook(&self.config.hooks.before_next, me, "")?;
 
         let session = self.store.load()?;
         match &session.state {
@@ -59,7 +60,7 @@ impl<'a> Next<'a> {
         let next_driver = session.drivers.next(&self.config.name);
         let next_driver_name = match next_driver {
             Some(ref driver) => driver,
-            None => "anyone!",
+            None => "anyone",
         };
 
         let session = session::Session {
@@ -71,6 +72,11 @@ impl<'a> Next<'a> {
 
         self.store.save(session)?;
         log::info!("Next driver: {}", next_driver_name);
+        command::run_hook(
+            &self.config.hooks.after_next,
+            &self.config.name,
+            next_driver_name,
+        )?;
         Ok(())
     }
 }

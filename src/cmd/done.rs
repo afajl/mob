@@ -1,4 +1,4 @@
-use crate::{config::Config, git, session};
+use crate::{command, config::Config, git, session};
 use anyhow::Result;
 use session::State;
 
@@ -15,6 +15,7 @@ impl<'a> Done<'a> {
 
     pub fn run(&self) -> Result<()> {
         let me = self.config.name.clone();
+        command::run_hook(&self.config.hooks.before_done, &me, "")?;
 
         let session = self.store.load()?;
         match &session.state {
@@ -101,6 +102,7 @@ impl<'a> Done<'a> {
             ..session
         };
         self.store.save(session)?;
+        command::run_hook(&self.config.hooks.after_done, &self.config.name, "")?;
         Ok(())
     }
 
