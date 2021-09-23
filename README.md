@@ -38,6 +38,8 @@ cargo install remotemob
 - `mob next` commits all changes to the feature branch and hands over to the next driver.
 - `mob done` stages all changes on the feature branch for commit on the base branch (normally master).
 
+![mob graph](https://github.com/afajl/mob/raw/master/graph.png)
+
 Run `mob` for help on more commands.
 
 ### FAQ
