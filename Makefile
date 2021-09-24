@@ -9,7 +9,7 @@ pull:
 update: pull install
 
 uml:
-	plantuml -tsvg state.uml
+	cd assets && plantuml -tsvg state.uml
 .PHONY: uml
 
 test-repos:

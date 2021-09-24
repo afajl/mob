@@ -1,12 +1,13 @@
-# mob
 
-A console tool to work in a remote mob (or pair) with git.
+![mob](https://github.com/afajl/mob/raw/master/assets/logo.png)
+
+Mob is a console tool to work in a remote mob (or pair) with git.
 
 * Handover code fast between drivers
 * Nice timer
 * Remembers order of drivers
 
-![mob screen](https://github.com/afajl/mob/raw/master/screen.gif)
+![mob screen](https://github.com/afajl/mob/raw/master/assets/screen.gif)
 
 
 
@@ -39,7 +40,7 @@ cargo install remotemob
 - `mob next` commits all changes to the feature branch and hands over to the next driver.
 - `mob done` stages all changes on the feature branch for commit on the base branch (normally master).
 
-![mob graph](https://github.com/afajl/mob/raw/master/graph.png)
+![mob graph](https://github.com/afajl/mob/raw/master/assets/graph.svg)
 
 Run `mob` for help on more commands.
 
@@ -48,7 +49,7 @@ Run `mob` for help on more commands.
 1. Run `mob done` to remove the mob branch. Either commit the
 changes or run `git reset HEAD --hard` to discard changes.
 2. Run `mob clean` to remove the `mob-meta` branch.
-3. Delete `~/.mob` if you don't want to use `mob` more
+3. Delete `~/.mob` if you don't want to use `mob` anymore
 
 ##### Where is the configuration stored?
 Configuration local to you is stored in `~/.mob`. Configuration

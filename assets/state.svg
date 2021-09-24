@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="375px" preserveAspectRatio="none" style="width:257px;height:375px;background:#FFFFFF;" version="1.1" viewBox="0 0 257 375" width="257px" zoomAndPan="magnify"><defs><filter height="300%" id="f37cybzssgdp7" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><ellipse cx="121.56" cy="16" fill="#000000" filter="url(#f37cybzssgdp7)" rx="10" ry="10" style="stroke:none;stroke-width:1.0;"/><rect fill="#D3D3D3" filter="url(#f37cybzssgdp7)" height="40" rx="12.5" ry="12.5" style="stroke:#D3D3D3;stroke-width:1.5;" width="66" x="88.56" y="87"/><text fill="#000000" font-family="Avenir" font-size="14" lengthAdjust="spacing" textLength="56" x="93.56" y="111.438">Stopped</text><rect fill="#D3D3D3" filter="url(#f37cybzssgdp7)" height="40" rx="12.5" ry="12.5" style="stroke:#D3D3D3;stroke-width:1.5;" width="63" x="33.06" y="204"/><text fill="#000000" font-family="Avenir" font-size="14" lengthAdjust="spacing" textLength="53" x="38.06" y="228.438">Working</text><rect fill="#D3D3D3" filter="url(#f37cybzssgdp7)" height="40" rx="12.5" ry="12.5" style="stroke:#D3D3D3;stroke-width:1.5;" width="110" x="68.56" y="321"/><text fill="#000000" font-family="Avenir" font-size="14" lengthAdjust="spacing" textLength="100" x="73.56" y="345.438">WaitingForNext</text><!--MD5=[620baed8f25f015c0eaeea776640b308]
+link *start to Stopped--><path d="M121.56,26.19 C121.56,39.18 121.56,63.38 121.56,81.73 " fill="none" id="*start-to-Stopped" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="121.56,86.74,125.56,77.74,121.56,81.74,117.56,77.74,121.56,86.74" style="stroke:#A80036;stroke-width:1.0;"/><!--MD5=[3961f00532336ff95314d988bf038428]
+link Stopped to Working--><path d="M88.5,113.55 C63.74,119.63 31.5,132.06 15.56,157 C6,171.95 17.28,187.94 31.41,200.44 " fill="none" id="Stopped-to-Working" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="35.46,203.87,31.1941,194.9929,31.6507,200.6313,26.0123,201.0879,35.46,203.87" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61" x="16.56" y="170.5684">mob start</text><!--MD5=[27cf03b2ed87c951c7131ffd45e7ab37]
+link Working to Stopped--><path d="M74.13,203.69 C83.92,183.93 99.16,153.19 109.71,131.91 " fill="none" id="Working-to-Stopped" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="112.02,127.25,104.4254,133.5207,109.7897,131.725,111.5854,137.0893,112.02,127.25" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="63" x="97.56" y="170.5684">mob done</text><!--MD5=[b27179e7e5deb87d867ce71b1cf84a8d]
+link Working to WaitingForNext--><path d="M37.32,244.06 C22.18,257.09 8.28,274.86 18.56,291 C28.83,307.13 45.95,318.04 63.42,325.38 " fill="none" id="Working-to-WaitingForNext" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="68.35,327.35,61.4793,320.2936,63.7076,325.493,58.5081,327.7214,68.35,327.35" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="60" x="19.56" y="287.5684">mob next</text><!--MD5=[5cfb33c1443f8dbf6a93577da397148d]
+link WaitingForNext to Working--><path d="M113.65,320.69 C103.51,300.93 87.74,270.19 76.82,248.91 " fill="none" id="WaitingForNext-to-Working" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="74.43,244.25,74.9904,254.0829,76.7174,248.6961,82.1042,250.4231,74.43,244.25" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="61" x="99.56" y="287.5684">mob start</text><!--MD5=[2712d7edf8edb66583f354b3cc07cb27]
+link WaitingForNext to Stopped--><path d="M148.23,320.62 C156.66,312.49 165.09,302.28 169.56,291 C191.48,235.62 192.06,212.14 169.56,157 C165.54,147.15 158.47,138.2 150.98,130.73 " fill="none" id="WaitingForNext-to-Stopped" style="stroke:#A80036;stroke-width:1.0;"/><polygon fill="#A80036" points="147.28,127.18,151.0189,136.2916,150.8932,130.6361,156.5487,130.5104,147.28,127.18" style="stroke:#A80036;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="63" x="186.56" y="229.0684">mob done</text><!--MD5=[d75dbfa35e1da62b5ea8326d45e51258]
+@startuml
+skinparam state {
+  BackgroundColor LightGray
+  BorderColor LightGray
+  FontName Avenir
+}
+
+
+[*] - -> Stopped
+hide empty description
+Stopped - -> Working: mob start
+Working - -> WaitingForNext: mob next
+WaitingForNext - -> Stopped: mob done
+WaitingForNext - -> Working: mob start
+Working - -> Stopped: mob done
+@enduml
+
+PlantUML version 1.2021.10(Mon Aug 30 15:43:48 CEST 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: SE
+--></g></svg>
