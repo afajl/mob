@@ -84,13 +84,13 @@ variables:
   a session. It is empty on all `before_*` hooks.
 
 The available hooks are:
-- `before_start`: Run as soon as possible when you run `mob start`, before checking that it is your turn 
+- `before_start`: Run as soon as possible when you run `mob start`, before checking that it's your turn 
    or that your working directory is clean.
 - `after_start`: Right after you've started a session with `mob start` but before the timer started. 
    This is a good hook for taking over the screen. 
 - `after_timer`: Run when your turn ended. The first time you run
    `mob start` it tries to find commands to play a sound and show
-   a desktop notification.
+   a desktop notification to populate this hook.
 - `before_next`: Before running mob next, `NEXT_DRIVER` is not available.
 - `after_next`: Before running mob next, `NEXT_DRIVER` is either
    a name or `anyone`. 
