@@ -1,6 +1,6 @@
 [package]
 name = "remotemob"
-version = "0.1.7-beta.3"
+version = "1.0.0-beta.1"
 authors = ["Paul Diaconescu <p@afajl.com>"]
 license = "MIT OR Apache-2.0"
 edition = "2018"
