@@ -73,12 +73,13 @@ start.
 ...
 [hooks]
 after_start="take_screen.sh"
-after_timer="beep"
+after_timer="say 'mob next NEXT_DRIVER'"
 ```
 
 
-Hooks are executed by a shell and can contain two
-variables:
+Hooks are executed by a `sh` and can contain two
+variables that are quoted (if needed) with
+[snailquote](https://docs.rs/crate/snailquote/0.3.0):
 - `CURRENT_DRIVER`: Always the name you configured in `~/.mob`
 - `NEXT_DRIVER`: Next driver or `anyone` if you are the first in
   a session. It is empty on all `before_*` hooks.
@@ -103,7 +104,8 @@ The available hooks are:
 state and settings. You can view the session content with `mob
 status` and delete it with `mob clean`.
 
-The session can be in 3 different states:
+The session can be in 3 different states:  
+
 ![mob states](https://github.com/afajl/mob/raw/master/assets/state.svg)
 
 

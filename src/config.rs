@@ -13,7 +13,7 @@ const CONFIG_FILE: &str = ".mob";
 pub const VAR_NEXT_DRIVER: &str = "NEXT_DRIVER";
 pub const VAR_CURRENT_DRIVER: &str = "CURRENT_DRIVER";
 
-const AFTER_TIMER_MESSAGE: &str = "mob next 'NEXT_DRIVER'";
+const AFTER_TIMER_MESSAGE: &str = "mob next NEXT_DRIVER";
 
 #[derive(Serialize, Deserialize)]
 pub struct Hooks {

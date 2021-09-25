@@ -151,8 +151,11 @@ pub fn run_hook(hook: &Option<String>, current_driver: &str, next_driver: &str) 
 
     let sh = Command::new(os::command("sh"));
 
-    let cmd = cmd.replace(config::VAR_CURRENT_DRIVER, current_driver);
-    let cmd = cmd.replace(config::VAR_NEXT_DRIVER, next_driver);
+    let cmd = cmd.replace(
+        config::VAR_CURRENT_DRIVER,
+        &snailquote::escape(current_driver),
+    );
+    let cmd = cmd.replace(config::VAR_NEXT_DRIVER, &snailquote::escape(next_driver));
 
     sh.run_checked(&["-c", cmd.as_str()])
 }
