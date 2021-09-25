@@ -20,7 +20,7 @@ pub fn start(title: &str, duration: chrono::Duration) -> Result<()> {
         if time_left != duration {
             term.clear_last_lines(FONT_HEIGHT)?;
         }
-        print_ascii(&term, letters)?;
+        print_ascii(&term, &letters)?;
         thread::sleep(second.to_std()?);
         time_left = time_left - second;
     }
@@ -43,7 +43,7 @@ fn asci_time(time: &str) -> Vec<&str> {
         .collect()
 }
 
-fn print_ascii(term: &Term, letters: Vec<&str>) -> Result<()> {
+fn print_ascii(term: &Term, letters: &[&str]) -> Result<()> {
     let lines: Vec<String> = (0..FONT_HEIGHT)
         .map(|row| //for row in 0..5 {
         letters

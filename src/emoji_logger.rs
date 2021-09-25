@@ -18,7 +18,7 @@ pub fn init(level: &str) {
         writeln!(f, " {}  {}", emoji, style.value(record.args()))
     });
 
-    builder.init()
+    builder.init();
 }
 
 fn level_style(style: &mut Style, level: Level) -> &'static str {

@@ -48,7 +48,7 @@ impl Session {
         match &self.state {
             State::Working { driver } => Some(driver.clone()),
             State::WaitingForNext { next, .. } => next.clone(),
-            _ => None,
+            State::Stopped => None,
         }
     }
 }

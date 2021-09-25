@@ -33,7 +33,7 @@ impl<'a> SessionStore<'a> {
         SessionStore { store }
     }
 
-    fn get_session(&self, data: Vec<u8>) -> Result<Session> {
+    fn get_session(data: Vec<u8>) -> Result<Session> {
         match serde_json::from_slice::<VersionedSession>(data.as_slice()) {
             Ok(versioned_session) => Ok(versioned_session.latest()),
             Err(..) => {
@@ -54,7 +54,7 @@ impl<'a> SessionStore<'a> {
 impl<'a> Store for SessionStore<'a> {
     fn load(&self) -> Result<Session> {
         match self.store.load() {
-            Ok(data) => self.get_session(data),
+            Ok(data) => SessionStore::get_session(data),
             Err(git::store::Error::Missing) => Ok(Session::default()),
             Err(error) => Err(Error::Git(error)),
         }
@@ -102,7 +102,7 @@ mod tests {
 
         let session_store = SessionStore::new(&store);
 
-        if let Ok(_) = session_store.load() {
+        if session_store.load().is_ok() {
             panic!("We should fail")
         }
     }

@@ -71,7 +71,7 @@ impl<'repo> GitCommand<'repo> {
         Signature::now(name.as_str(), email.as_str())
     }
 
-    pub fn create_commit(&self, commit: CommitFile) -> Result<git2::Oid, Error> {
+    pub fn create_commit(&self, commit: &CommitFile) -> Result<git2::Oid, Error> {
         let oid = self.repo.blob(commit.data)?;
 
         let mut tree = self.repo.treebuilder(None)?;

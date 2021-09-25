@@ -21,9 +21,9 @@ impl Drivers {
         match index {
             Some(i) => {
                 if i + 1 > self.0.len() {
-                    self.0.push(name.to_string())
+                    self.0.push(name.to_string());
                 } else {
-                    self.0.insert(i + 1, name.to_string())
+                    self.0.insert(i + 1, name.to_string());
                 }
             }
             None => self.0.push(name.to_string()),
@@ -39,18 +39,13 @@ impl Drivers {
         match self.0.len() {
             0 => panic!("Next driver called before anyone started"),
             1 => None,
-            _ => Some(
-                self.0
-                    .iter()
-                    .position(|name| name == current)
-                    .map(|index| {
-                        let next_index = (index + 1) % self.0.len();
-                        self.0[next_index].clone()
-                    })
-                    .unwrap_or_else(|| {
-                        panic!("Could not find current driver {} in drivers", current)
-                    }),
-            ),
+            _ => Some(self.0.iter().position(|name| name == current).map_or_else(
+                || panic!("Could not find current driver {} in drivers", current),
+                |index| {
+                    let next_index = (index + 1) % self.0.len();
+                    self.0[next_index].clone()
+                },
+            )),
         }
     }
 

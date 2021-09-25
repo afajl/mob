@@ -35,7 +35,7 @@ impl<'a> Status<'a> {
         }
 
         self.print_status(&session);
-        self.print_drivers(&session);
+        Status::print_drivers(&session);
 
         Ok(())
     }
@@ -56,7 +56,7 @@ impl<'a> Status<'a> {
                 };
                 println!("🚗 {} {}", driver, style("driving").green(),);
                 println!("   {}", style("Run 'mob next' when finished").cyan());
-                self.print_branches(&session.branches);
+                Status::print_branches(&session.branches);
             }
             State::WaitingForNext { next } => {
                 let next = match next {
@@ -70,12 +70,12 @@ impl<'a> Status<'a> {
                     style("Waiting").blue(),
                     next
                 );
-                self.print_branches(&session.branches);
+                Status::print_branches(&session.branches);
             }
         }
     }
 
-    fn print_branches(&self, branches: &session::Branches) {
+    fn print_branches(branches: &session::Branches) {
         println!(
             "\n🚚 working on {} with parent {}",
             style(&branches.branch).red().bold(),
@@ -83,7 +83,7 @@ impl<'a> Status<'a> {
         )
     }
 
-    fn print_drivers(&self, session: &session::Session) {
+    fn print_drivers(session: &session::Session) {
         let drivers = session.drivers.all();
         if drivers.is_empty() {
             return;

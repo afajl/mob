@@ -61,14 +61,14 @@ impl<'a> Start<'a> {
                 }
             }
             State::WaitingForNext { next: Some(driver) } if driver == me.as_str() => {
-                self.start(session)?
+                self.start(session)?;
             }
             State::WaitingForNext { next: None } => self.start(session)?,
             State::WaitingForNext { next: Some(driver) } => {
-                if !session.drivers.contains(self.config.name.as_str()) {
-                    self.start(session)?
+                if session.drivers.contains(self.config.name.as_str()) {
+                    self.take_over(driver, session.clone())?;
                 } else {
-                    self.take_over(driver, session.clone())?
+                    self.start(session)?;
                 }
             }
         };
@@ -252,22 +252,19 @@ impl<'a> Start<'a> {
                     .items(&selections[..])
                     .interact()?;
 
-                match selection {
-                    0 => {
-                        self.git.run(&[
-                            "push",
-                            "--no-verify",
-                            "--set-upstream",
-                            self.config.remote.as_str(),
-                            branches.branch.as_str(),
-                        ])?;
-                        self.git.run(&["checkout", branches.branch.as_str()])?;
-                    }
-                    _ => {
-                        self.git.run(&["branch", "-D", branches.branch.as_str()])?;
+                if selection == 0 {
+                    self.git.run(&[
+                        "push",
+                        "--no-verify",
+                        "--set-upstream",
+                        self.config.remote.as_str(),
+                        branches.branch.as_str(),
+                    ])?;
+                    self.git.run(&["checkout", branches.branch.as_str()])?;
+                } else {
+                    self.git.run(&["branch", "-D", branches.branch.as_str()])?;
 
-                        create_and_push()?;
-                    }
+                    create_and_push()?;
                 }
             }
             (false, true) => {

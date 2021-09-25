@@ -1,4 +1,4 @@
-use super::*;
+use super::{store, CommitFile, GitCommand, Result};
 
 const SESSION_FILENAME: &str = "data";
 const SESSION_HEAD: &str = "mob-meta";
@@ -35,7 +35,7 @@ impl<'repo> Store for GitCommand<'repo> {
             message: COMMIT_MESSAGE,
         };
 
-        self.create_commit(commit)?;
+        self.create_commit(&commit)?;
 
         self.run_quietly(&[
             "push",
@@ -53,7 +53,7 @@ impl<'repo> Store for GitCommand<'repo> {
                     "Could not delete local mob branch {}: {}",
                     SESSION_HEAD,
                     err
-                )
+                );
             });
 
         self.run_quietly(&[
@@ -66,7 +66,7 @@ impl<'repo> Store for GitCommand<'repo> {
                 "Could not fetch remote mob branch {}: {}",
                 SESSION_HEAD,
                 err
-            )
+            );
         });
 
         let commit = self.last_commit(SESSION_HEAD);
