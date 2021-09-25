@@ -13,6 +13,9 @@ Console tool for streamlining remote mobbing
 """
 include = ["src/**/*", "README.md"]
 
+[profile.release]
+lto = true
+
 [[bin]]
 name = "mob"
 path = "src/main.rs"
