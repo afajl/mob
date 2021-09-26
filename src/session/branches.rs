@@ -16,7 +16,7 @@ impl Branches {
         }
     }
     pub fn ask(default: Branches) -> Result<Branches> {
-        if default.base_branch != "master" || default.base_branch != "main" {
+        if default.base_branch != "master" && default.base_branch != "main" {
             log::info!("Note that you are not on main or master");
         }
 
