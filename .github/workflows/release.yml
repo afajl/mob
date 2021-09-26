@@ -3,7 +3,8 @@ name: Release
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+(-\w+\.[0-9]+)?'
+      - v1*
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -45,8 +46,10 @@ jobs:
           toolchain: ${{ matrix.rust }}
           profile: minimal
           override: true
+
       - name: Checkout repository
         uses: actions/checkout@v2
+
       - name: Cargo build
         uses: actions-rs/cargo@v1
         with:
@@ -55,13 +58,14 @@ jobs:
           toolchain: ${{ matrix.rust }}
           args: --release --target ${{ matrix.job.target }}
 
-      - name: install strip command
+      - name: Install strip command
         shell: bash
         run: |
           if [[ ${{ matrix.job.target }} == aarch64-unknown-linux-gnu ]]; then
               sudo apt update
               sudo apt-get install -y binutils-aarch64-linux-gnu
           fi
+
       - name: Packaging final binary
         shell: bash
         run: |
@@ -86,14 +90,20 @@ jobs:
           else
             shasum -a 256 $RELEASE_NAME.tar.gz > $RELEASE_NAME.sha256
           fi
+
+      - name: Build Changelog
+        id: github_release
+        uses: mikepenz/release-changelog-builder-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Releasing assets
         uses: softprops/action-gh-release@v1
         with:
+          body: ${{steps.github_release.outputs.changelog}}
           files: |
             target/${{ matrix.job.target }}/release/mob-*.tar.gz
             target/${{ matrix.job.target }}/release/mob-*.sha256
-        # env:
-        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-cargo:
     name: Publishing to Cargo
