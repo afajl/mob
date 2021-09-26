@@ -14,7 +14,10 @@ Mob is a console tool to work in a remote mob (or pair) with git.
 <!-- Run :UpdateToc to update -->
 <!-- vim-markdown-toc GFM -->
 
-* [How to install](#how-to-install)
+* [Installing](#installing)
+    * [Homebrew](#homebrew)
+    * [Cargo](#cargo)
+    * [Manually](#manually)
 * [Usage](#usage)
   * [FAQ](#faq)
       * [How do I remove all traces of `mob` from a repo?](#how-do-i-remove-all-traces-of-mob-from-a-repo)
@@ -27,12 +30,23 @@ Mob is a console tool to work in a remote mob (or pair) with git.
 
 <!-- vim-markdown-toc -->
 
-## How to install
+## Installing
+
+#### Homebrew
+```bash
+brew install afajl/mob/mob
+```
+
+#### Cargo
 Install [rust](https://www.rust-lang.org/tools/install) and run:
 ```bash
 cargo install remotemob
 ```
 
+#### Manually
+Download the [latest
+release](https://github.com/afajl/mob/releases/latest) and unpack it to somewhere in your
+PATH.
 
 ## Usage 
 - `mob start` creates a new feature branch or syncs the branch from the
