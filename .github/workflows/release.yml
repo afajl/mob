@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - v1*
-  workflow_dispatch:
 
 jobs:
   publish:
@@ -12,38 +11,33 @@ jobs:
     runs-on: ${{ matrix.job.os }}
     strategy:
       matrix:
-        rust: [stable]
         job:
-          - os: macos-latest
+          - build: macos
+            os: macos-latest
             os-name: macos
             target: x86_64-apple-darwin
             architecture: x86_64
-            binary-postfix: ""
             use-cross: false
-          - os: ubuntu-latest
+
+          - build: linux
+            os: ubuntu-latest
             os-name: linux
             target: x86_64-unknown-linux-gnu
             architecture: x86_64
-            binary-postfix: ""
             use-cross: false
-          - os: ubuntu-latest
+
+          - build: linux-arm
+            os: ubuntu-latest
             os-name: linux
             target: aarch64-unknown-linux-gnu
             architecture: arm64
-            binary-postfix: ""
-            use-cross: true
-          - os: ubuntu-latest
-            os-name: linux
-            target: i686-unknown-linux-gnu
-            architecture: i686
-            binary-postfix: ""
             use-cross: true
 
     steps:
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{ matrix.rust }}
+          toolchain: stable
           profile: minimal
           override: true
 
@@ -54,42 +48,29 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          use-cross: ${{ matrix.job.use-cross }}
-          toolchain: ${{ matrix.rust }}
+          use-cross: true
+          toolchain: stable
           args: --release --target ${{ matrix.job.target }}
 
-      - name: Install strip command
-        shell: bash
+      - name: Strip release binary (linux and macos)
+        if: matrix.build == 'linux' || matrix.build == 'macos'
+        run: strip "target/${{ matrix.job.target }}/release/mob"
+
+      - name: Strip release binary (arm)
+        if: matrix.build == 'linux-arm'
         run: |
-          if [[ ${{ matrix.job.target }} == aarch64-unknown-linux-gnu ]]; then
-              sudo apt update
-              sudo apt-get install -y binutils-aarch64-linux-gnu
-          fi
+          sudo apt update
+          sudo apt-get install -y binutils-aarch64-linux-gnu
+          aarch64-linux-gnu-strip "target/${{ matrix.job.target }}/release/mob"
 
       - name: Packaging final binary
         shell: bash
         run: |
           cd target/${{ matrix.job.target }}/release
 
-          ####### reduce binary size by removing debug symbols #######
-          BINARY_NAME=mob${{ matrix.job.binary-postfix }}
-          if [[ ${{ matrix.job.target }} == aarch64-unknown-linux-gnu ]]; then
-            GCC_PREFIX="aarch64-linux-gnu-"
-          else
-            GCC_PREFIX=""
-          fi
-          "$GCC_PREFIX"strip $BINARY_NAME
-
-          ########## create tar.gz ##########
-          RELEASE_NAME=mob-${GITHUB_REF/refs\/tags\//}-${{ matrix.job.os-name }}-${{ matrix.job.architecture }}
-          tar czvf $RELEASE_NAME.tar.gz $BINARY_NAME
-
-          ########## create sha256 ##########
-          if [[ ${{ runner.os }} == 'Windows' ]]; then
-            certutil -hashfile $RELEASE_NAME.tar.gz sha256 | grep -E [A-Fa-f0-9]{64} > $RELEASE_NAME.sha256
-          else
-            shasum -a 256 $RELEASE_NAME.tar.gz > $RELEASE_NAME.sha256
-          fi
+          RELEASE_NAME=mob-${GITHUB_REF/refs\/tags\//}-${{ matrix.job.os-name }}-${{ matrix.job.target }}
+          tar czvf $RELEASE_NAME.tar.gz mob
+          shasum -a 256 $RELEASE_NAME.tar.gz > $RELEASE_NAME.sha256
 
       - name: Build Changelog
         id: github_release
