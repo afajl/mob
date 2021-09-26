@@ -47,7 +47,9 @@ impl Session {
     pub fn get_driver(&self) -> Option<String> {
         match &self.state {
             State::Working { driver } => Some(driver.clone()),
-            State::WaitingForNext { next, .. } => next.clone(),
+            State::WaitingForNext { next, .. } => {
+                next.clone().and_then(|d| self.drivers.prev(d.as_str()))
+            }
             State::Stopped => None,
         }
     }

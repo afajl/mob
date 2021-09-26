@@ -35,18 +35,37 @@ impl Drivers {
         self.0.contains(&name.to_string())
     }
 
-    pub fn next(&self, current: &str) -> Option<String> {
-        match self.0.len() {
-            0 => panic!("Next driver called before anyone started"),
-            1 => None,
-            _ => Some(self.0.iter().position(|name| name == current).map_or_else(
-                || panic!("Could not find current driver {} in drivers", current),
-                |index| {
-                    let next_index = (index + 1) % self.0.len();
-                    self.0[next_index].clone()
-                },
-            )),
+    fn index(&self, driver: &str) -> Option<usize> {
+        let len = self.0.len();
+
+        if len == 0 {
+            panic!("Next driver called before anyone started");
         }
+
+        if len == 1 {
+            return None;
+        }
+
+        Some(
+            self.0
+                .iter()
+                .position(|name| name == driver)
+                .expect("Could not find current driver in session"),
+        )
+    }
+
+    pub fn next(&self, current: &str) -> Option<String> {
+        self.index(current).map(|i| {
+            let next_index = (i + 1) % self.0.len();
+            self.0[next_index].clone()
+        })
+    }
+
+    pub fn prev(&self, current: &str) -> Option<String> {
+        self.index(current).map(|i| {
+            let prev_index = if i == 0 { self.0.len() - 1 } else { i - 1 };
+            self.0[prev_index].clone()
+        })
     }
 
     pub fn remove(mut self, name: &str) -> Self {
