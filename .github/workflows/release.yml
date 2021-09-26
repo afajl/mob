@@ -1,9 +1,9 @@
-name: CD # Continuous Deployment
+name: Release
 
 on:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+(-\w+\.[0-9]+)?'
+      - 'v[0-9]+.[0-9]+.[0-9]+(-\w+\.[0-9]+)?'
 
 jobs:
   publish:
