@@ -54,12 +54,6 @@ jobs:
           toolchain: stable
           args: --release --target ${{ matrix.job.target }}
 
-      - name: Install openssl
-        if: matrix.os == 'unbuntu-latest'
-        run: |
-          sudo apt update
-          sudo apt-get install -y openssl
-
       - name: Strip release binary (linux and macos)
         if: matrix.build == 'linux' || matrix.build == 'macos'
         run: strip "target/${{ matrix.job.target }}/release/mob"
