@@ -6,10 +6,9 @@ on:
       - v1*
   workflow_dispatch:
 
-
 jobs:
   publish:
-    name: Publishing for ${{ matrix.job.os }}
+    name: Publishing for ${{ matrix.job.build }}
     runs-on: ${{ matrix.job.os }}
     strategy:
       matrix:
@@ -102,3 +101,25 @@ jobs:
         with:
           command: publish
           args: --token ${{ secrets.CARGO_API_KEY }}
+
+  homebrew:
+    name: Bump Homebrew formula
+    needs: [publish]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract version
+        id: extract-version
+        run: |
+          printf "::set-output name=%s::%s\n" tag-name "${GITHUB_REF#refs/tags/}"
+
+      - name: Bumb homebrew formula
+        uses: mislav/bump-homebrew-formula-action@v1
+        if: "!contains(github.ref, '-')"
+        with:
+          formula-name: mob
+          homebrew-tap: afajl/homebrew-mob
+          download-url: 'https://github.com/afajl/mob/releases/download/${{ steps.extract-version.outputs.tag-name }}/mob-${{ steps.extract-version.outputs.tag-name }}-macos-x86_64-apple-darwin.tar.gz'
+          commit-message: |
+            {{formulaName}} {{version}}
+        env:
+          COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
