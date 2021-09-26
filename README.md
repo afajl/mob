@@ -4,8 +4,9 @@
 Mob is a console tool to work in a remote mob (or pair) with git.
 
 * Handover code fast between drivers
-* Nice timer
 * Remembers order of drivers
+* [Keeps track of state](#how-it-works) (working, waiting for next, stopped) to eliminate risk of conflicts and lost work
+* Use any branch as base
 
 ![mob screen](https://github.com/afajl/mob/raw/master/assets/screen.gif)
 
@@ -26,7 +27,7 @@ Mob is a console tool to work in a remote mob (or pair) with git.
       * [Work duration is set to 15 but we must stop for a meeting in 7 minutes](#work-duration-is-set-to-15-but-we-must-stop-for-a-meeting-in-7-minutes)
 * [Hooks](#hooks)
 * [How it works](#how-it-works)
-* [Thanks](#thanks)
+* [Inspiration and other tools](#inspiration-and-other-tools)
 
 <!-- vim-markdown-toc -->
 
@@ -118,14 +119,46 @@ The available hooks are:
 ## How it works
 `mob` uses an orphan branch called `mob-meta` to save session
 state and settings. You can view the session content with `mob
-status` and delete it with `mob clean`.
+status [-r]` and delete it with `mob clean`.
+
+```json
+Session {
+    drivers: Drivers(
+        [
+            "Paul",
+            "Leo",
+            "Ella",
+        ],
+    ),
+    branches: Branches {
+        branch: "mob-session",
+        base_branch: "master",
+    },
+    settings: Some(
+        Settings {
+            commit_message: "mob sync [skip ci]",
+            work_duration: 10,
+        },
+    ),
+    state: Working {
+        driver: "Ella",
+    },
+}
+```
 
 The session can be in 3 different states:  
 
 ![mob states](https://github.com/afajl/mob/raw/master/assets/state.svg)
 
 
-## Thanks
+## Inspiration and other tools
 Inspiration for this tool comes from [Remote mob
 programming](https://www.remotemobprogramming.org/) and their tool
 [mob](https://github.com/remotemobprogramming/mob) written in Go.
+
+I did this rewrite to:
+- remember the order of drivers
+- use any branch as base branch, not only master or main
+- know about the state so we get nice
+    warnings instead of git conflicts and lost refs.
+- and of course... rust ;)
