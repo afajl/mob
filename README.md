@@ -48,7 +48,9 @@ Download the [latest
 release](https://github.com/afajl/mob/releases/latest) and unpack it to somewhere in your
 PATH.
 
-## Usage 
+## Usage
+> Note: It's safe to try mob! It prints all git commands it runs and if you decide that it's not for you can [remove all traces](#how-do-i-remove-all-traces-of-mob-from-a-repo).
+ 
 - `mob start` creates a new feature branch or syncs the branch from the
   previous driver. 
 - `mob next` commits all changes to the feature branch and hands over to the next driver.
@@ -59,23 +61,23 @@ PATH.
 Run `mob` for help on more commands.
 
 ### FAQ
-##### How do I remove all traces of `mob` from a repo?
+#### How do I remove all traces of `mob` from a repo?
 1. Run `mob done` to remove the mob branch. Either commit the
 changes or run `git reset HEAD --hard` to discard changes.
 2. Run `mob clean` to remove the `mob-meta` branch.
 3. Delete `~/.mob` if you don't want to use `mob` anymore
 
-##### Where is the configuration stored?
+#### Where is the configuration stored?
 Configuration local to you is stored in `~/.mob`. Configuration
 for a repository is stored in an orphan branch named `mob-meta`.  
 `mob start` creates all configuration needed to run. It is always
 safe to run `mob clean` to remove the repository config and start
 fresh.
 
-##### How do I show current status?
+#### How do I show current status?
 Run `mob status`
 
-##### Work duration is set to 15 but we must stop for a meeting in 7 minutes
+#### Work duration is set to 15 but we must stop for a meeting in 7 minutes
 Run `mob start 7`
 
 
