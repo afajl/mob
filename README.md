@@ -120,7 +120,7 @@ The available hooks are:
 state and settings. You can view the session content with `mob
 status [-r]` and delete it with `mob clean`.
 
-```json
+```javascript
 Session {
     drivers: Drivers(
         [
