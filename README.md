@@ -21,10 +21,10 @@ Mob is a console tool to work in a remote mob (or pair) with git.
     * [Manually](#manually)
 * [Usage](#usage)
   * [FAQ](#faq)
-      * [How do I remove all traces of `mob` from a repo?](#how-do-i-remove-all-traces-of-mob-from-a-repo)
-      * [Where is the configuration stored?](#where-is-the-configuration-stored)
-      * [How do I show current status?](#how-do-i-show-current-status)
-      * [Work duration is set to 15 but we must stop for a meeting in 7 minutes](#work-duration-is-set-to-15-but-we-must-stop-for-a-meeting-in-7-minutes)
+    * [How do I remove all traces of `mob` from a repo?](#how-do-i-remove-all-traces-of-mob-from-a-repo)
+    * [Where is the configuration stored?](#where-is-the-configuration-stored)
+    * [How do I show current status?](#how-do-i-show-current-status)
+    * [Work duration is set to 15 but we must stop for a meeting in 7 minutes](#work-duration-is-set-to-15-but-we-must-stop-for-a-meeting-in-7-minutes)
 * [Hooks](#hooks)
 * [How it works](#how-it-works)
 * [Inspiration and other tools](#inspiration-and-other-tools)
@@ -95,8 +95,7 @@ after_timer="say 'mob next NEXT_DRIVER'"
 
 
 Hooks are executed by a `sh` and can contain two
-variables that are quoted (if needed) with
-[snailquote](https://docs.rs/crate/snailquote/0.3.0):
+variables:
 - `CURRENT_DRIVER`: Always the name you configured in `~/.mob`
 - `NEXT_DRIVER`: Next driver or `anyone` if you are the first in
   a session. It is empty on all `before_*` hooks.

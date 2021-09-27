@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use anyhow::Error;
 use anyhow::Result;
 use std::borrow::Cow;
@@ -149,13 +150,10 @@ pub fn run_hook(hook: &Option<String>, current_driver: &str, next_driver: &str) 
         return Ok(());
     };
 
+    let cmd = cmd.replace(config::VAR_CURRENT_DRIVER, current_driver);
+    let cmd = cmd.replace(config::VAR_NEXT_DRIVER, next_driver);
+
     let sh = Command::new(os::command("sh"));
-
-    let cmd = cmd.replace(
-        config::VAR_CURRENT_DRIVER,
-        &snailquote::escape(current_driver),
-    );
-    let cmd = cmd.replace(config::VAR_NEXT_DRIVER, &snailquote::escape(next_driver));
-
     sh.run_checked(&["-c", cmd.as_str()])
+        .map_err(|e| anyhow!("Failed to run '{}': {}", cmd, e))
 }
