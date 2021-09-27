@@ -161,3 +161,5 @@ I did this rewrite to:
 - know about the state so we get nice
     warnings instead of git conflicts and lost refs.
 - and of course... rust ;)
+
+To find other tools look at the [mob programming timer tag on github](https://github.com/topics/mob-programming-timer)
