@@ -14,7 +14,7 @@ impl Drivers {
         }
 
         let index = match after {
-            Some(after) => self.0.iter().position(|existing| existing == &after),
+            Some(after) => self.position(&after),
             None => None,
         };
 
@@ -36,22 +36,7 @@ impl Drivers {
     }
 
     fn position(&self, driver: &str) -> Option<usize> {
-        let len = self.0.len();
-
-        if len == 0 {
-            panic!("Trying to find driver before anyone started");
-        }
-
-        if len == 1 {
-            return None;
-        }
-
-        Some(
-            self.0
-                .iter()
-                .position(|name| name == driver)
-                .expect("Could not find current driver in session"),
-        )
+        self.0.iter().position(|name| name == driver)
     }
 
     pub fn next(&self, current: &str) -> Option<String> {

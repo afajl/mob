@@ -90,6 +90,9 @@ impl<'a> Start<'a> {
             1 => {
                 let session = session::Session {
                     drivers: session.drivers.remove(from),
+                    state: State::WaitingForNext {
+                        next: Some(self.config.name.clone()),
+                    },
                     ..session
                 };
                 self.start(session)
