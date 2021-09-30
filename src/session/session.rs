@@ -54,3 +54,44 @@ impl Session {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn get_driver_one() {
+        let session = Session {
+            drivers: Drivers::new(vec!["one".to_string()]),
+            ..Session::default()
+        };
+
+        assert_eq!(session.get_driver(), None)
+    }
+
+    #[test]
+    fn get_driver_working() {
+        let session = Session {
+            drivers: Drivers::new(vec!["one".to_string(), "two".to_string()]),
+            state: State::Working {
+                driver: "two".to_string(),
+            },
+            ..Session::default()
+        };
+
+        assert_eq!(session.get_driver(), Some("two".to_string()))
+    }
+
+    #[test]
+    fn get_driver_next() {
+        let session = Session {
+            drivers: Drivers::new(vec!["one".to_string(), "two".to_string()]),
+            state: State::WaitingForNext {
+                next: Some("two".to_string()),
+            },
+            ..Session::default()
+        };
+
+        assert_eq!(session.get_driver(), Some("one".to_string()))
+    }
+}

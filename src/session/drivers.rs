@@ -35,11 +35,11 @@ impl Drivers {
         self.0.contains(&name.to_string())
     }
 
-    fn index(&self, driver: &str) -> Option<usize> {
+    fn position(&self, driver: &str) -> Option<usize> {
         let len = self.0.len();
 
         if len == 0 {
-            panic!("Next driver called before anyone started");
+            panic!("Trying to find driver before anyone started");
         }
 
         if len == 1 {
@@ -55,14 +55,14 @@ impl Drivers {
     }
 
     pub fn next(&self, current: &str) -> Option<String> {
-        self.index(current).map(|i| {
+        self.position(current).map(|i| {
             let next_index = (i + 1) % self.0.len();
             self.0[next_index].clone()
         })
     }
 
     pub fn prev(&self, current: &str) -> Option<String> {
-        self.index(current).map(|i| {
+        self.position(current).map(|i| {
             let prev_index = if i == 0 { self.0.len() - 1 } else { i - 1 };
             self.0[prev_index].clone()
         })
@@ -70,10 +70,8 @@ impl Drivers {
 
     pub fn remove(mut self, name: &str) -> Self {
         let index = self
-            .0
-            .iter()
-            .position(|n| n == name)
-            .unwrap_or_else(|| panic!("Trying to remove {} that is not a driver", name));
+            .position(name)
+            .expect("Trying to remove driver that is not part of the session");
         self.0.remove(index);
         self
     }
@@ -111,5 +109,19 @@ mod tests {
             driver_added.all(),
             vec!["a".to_string(), "c".to_string(), "b".to_string()]
         );
+    }
+
+    #[test]
+    fn remove() {
+        let drivers = Drivers::new(vec!["a".to_string(), "b".to_string(), "c".to_string()]);
+        let driver_removed = drivers.remove("c");
+        assert_eq!(driver_removed.all(), vec!["a".to_string(), "b".to_string()]);
+    }
+
+    #[test]
+    fn remove_middle() {
+        let drivers = Drivers::new(vec!["a".to_string(), "b".to_string(), "c".to_string()]);
+        let driver_removed = drivers.remove("b");
+        assert_eq!(driver_removed.all(), vec!["a".to_string(), "c".to_string()]);
     }
 }

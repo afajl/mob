@@ -110,6 +110,7 @@ impl<'a> Start<'a> {
         ])?;
 
         let previous_driver = session.get_driver();
+
         let session = session::Session {
             state: State::Working {
                 driver: self.config.name.clone(),
