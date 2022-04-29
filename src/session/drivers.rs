@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Drivers(Vec<String>);
 
 impl Drivers {
@@ -63,12 +63,6 @@ impl Drivers {
 
     pub fn all(&self) -> Vec<String> {
         self.0.clone()
-    }
-}
-
-impl Default for Drivers {
-    fn default() -> Self {
-        Drivers(vec![])
     }
 }
 

@@ -3,7 +3,7 @@ name = "remotemob"
 version = "1.1.2-beta.1"
 authors = ["Paul Diaconescu <p@afajl.com>"]
 license = "MIT OR Apache-2.0"
-edition = "2018"
+edition = "2021"
 categories = ["command-line-utilities"]
 keywords = ["cli"]
 homepage = "https://github.com/afajl/mob"
@@ -15,6 +15,12 @@ include = ["src/**/*", "README.md"]
 
 [profile.release]
 lto = true
+
+[package.metadata.release]
+dev-version = false
+publish = false
+
+
 
 [[bin]]
 name = "mob"
