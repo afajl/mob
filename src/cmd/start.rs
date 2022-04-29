@@ -35,9 +35,8 @@ impl<'a> Start<'a> {
     pub fn run(&self) -> Result<()> {
         let me = &self.config.name;
         command::run_hook(&self.config.hooks.before_start, me, "")?;
-        if !self.git.tree_is_clean()? {
-            return Err(anyhow!("Working tree is not clean"));
-        }
+
+        self.is_clean()?;
 
         let session = self.store.load()?;
 
@@ -74,6 +73,27 @@ impl<'a> Start<'a> {
         };
 
         Ok(())
+    }
+
+    fn is_clean(&self) -> Result<()> {
+        let status = self.git.dirty_files()?;
+        if status.is_empty() {
+            return Ok(());
+        }
+
+        log::warn!("Working tree is dirty:\n{}", status);
+
+        let selection = dialoguer::Select::new()
+            .default(0)
+            .items(&["Quit", "Stash changes", "Discard changes"])
+            .interact()?;
+
+        match selection {
+            0 => Err(anyhow!("Working tree is not clean")),
+            1 => self.git.run(&["stash"]),
+            2 => self.git.run(&["reset", "HEAD", "--hard"]),
+            _ => unreachable!("could not come here"),
+        }
     }
 
     fn take_over(&self, from: &str, session: session::Session) -> Result<()> {

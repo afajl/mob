@@ -13,6 +13,7 @@ pub trait Git {
     fn tree_is_clean(&self) -> Result<bool>;
     fn has_branch(&self, branch: &str) -> Result<bool>;
     fn current_branch(&self) -> Result<Option<String>>;
+    fn dirty_files(&self) -> Result<String>;
 }
 
 #[derive(Debug)]
@@ -126,9 +127,7 @@ impl<'repo> Git for GitCommand<'repo> {
     }
 
     fn tree_is_clean(&self) -> Result<bool> {
-        self.command
-            .run_stdout(&["status", "--short"])
-            .map(|output| output.trim().is_empty())
+        self.dirty_files().map(|output| output.trim().is_empty())
     }
 
     fn has_branch(&self, branch: &str) -> Result<bool> {
@@ -140,5 +139,9 @@ impl<'repo> Git for GitCommand<'repo> {
 
     fn current_branch(&self) -> Result<Option<String>> {
         return Ok(self.repo.head()?.shorthand().map(String::from));
+    }
+
+    fn dirty_files(&self) -> Result<String> {
+        self.command.run_stdout(&["status", "--short"])
     }
 }
