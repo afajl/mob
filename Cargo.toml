@@ -13,10 +13,6 @@ Console tool for streamlining remote mobbing
 """
 include = ["src/**/*", "README.md"]
 
-[package.metadata.release]
-no-dev-version = true
-disable-publish = true
-
 [profile.release]
 lto = true
 
