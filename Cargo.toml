@@ -26,19 +26,19 @@ path = "src/main.rs"
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
-clap = { version = "3.0.0-beta.4" }
+clap = { version = "3.1", features = ["derive", "cargo"] }
 serde = { version = "1.0", features = ["derive"] }
 confy = "0.4.0"
 serde_yaml = "0.8"
 serde_json = "1.0"
-tempfile = "3.2"
+tempfile = "3.3"
 log = "0.4"
 anyhow = "1.0"
 thiserror = "1.0"
 env_logger = "0.9"
-dialoguer = "0.8"
-console = "0.14"
-git2 = { version = "0.13", default_features = false }
-whoami = "1.1"
-directories = "3.0"
-which = "4.2.2"
+dialoguer = "0.10"
+console = "0.15"
+git2 = { version = "0.14", default_features = false }
+whoami = "1.2"
+directories = "4.0"
+which = "4.2"

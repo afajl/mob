@@ -1,15 +1,15 @@
 use anyhow::Result;
-use clap::Clap;
+use clap::Parser;
 use remotemob::{cmd, config, emoji_logger, git, session, session::Store};
 
-#[derive(Clap)]
+#[derive(Parser)]
 #[clap(version = clap::crate_version!(), author = clap::crate_authors!())]
 struct Opts {
     #[clap(subcommand)]
     subcmd: SubCommand,
 }
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 enum SubCommand {
     /// Show status
     #[clap(name = "status")]

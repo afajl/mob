@@ -1,9 +1,9 @@
 use crate::{command, config::Config, git, session, timer};
 use anyhow::{anyhow, Result};
-use clap::{self, Clap};
+use clap::Parser;
 use session::State;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct StartOpts {
     /// How long you want this work session to last
     #[clap(name = "MINUTES")]

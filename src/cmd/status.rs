@@ -1,10 +1,10 @@
 use crate::{config::Config, session};
 use anyhow::Result;
-use clap::{self, Clap};
+use clap::Parser;
 use console::style;
 use session::State;
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct StatusOpts {
     /// Show raw status
     #[clap(short, long)]
