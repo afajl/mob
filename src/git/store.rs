@@ -1,3 +1,5 @@
+use anyhow::anyhow;
+
 use super::{store, CommitFile, GitCommand, Result};
 
 const SESSION_FILENAME: &str = "data";
@@ -6,16 +8,19 @@ const COMMIT_MESSAGE: &str = "mob metadata changed [skip ci]";
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("failure pushing to origin: `{0}`")]
-    Conflict(#[from] anyhow::Error),
-
     // #[error("unable to deserialize data `{0}`")]
     // Format(#[from] serde_json::Error),
     #[error("unknown error")]
-    Other(#[from] git2::Error),
+    Unknown(#[from] anyhow::Error),
+
+    #[error("repository operation failed: `{0}`")]
+    Repo(#[from] git2::Error),
+
+    #[error("failed to push to origin")]
+    Conflict,
 
     #[error("missing config")]
-    Missing,
+    Missing { source: anyhow::Error },
 }
 
 pub trait Store {
@@ -43,37 +48,33 @@ impl<'repo> Store for GitCommand<'repo> {
             self.remote.as_str(),
             format!("{}:{}", SESSION_HEAD, SESSION_HEAD).as_str(),
         ])
-        .map_err(store::Error::Conflict) // TODO: should check for "rejected" in output
+        .map_err(|_| store::Error::Conflict) // TODO: should check for "rejected" in output
     }
 
     fn load(&self) -> Result<Vec<u8>, store::Error> {
         self.run_quietly(&["branch", "-D", SESSION_HEAD])
-            .unwrap_or_else(|err| {
-                log::trace!(
-                    "Could not delete local mob branch {}: {}",
-                    SESSION_HEAD,
-                    err
-                );
-            });
+            .map_err(|err| Error::Missing {
+                source: err.context("Could not delete local meta branch: {SESSION_HEAD}"),
+            })?;
 
         self.run_quietly(&[
             "fetch",
             self.remote.as_str(),
             format!("{}:{}", SESSION_HEAD, SESSION_HEAD).as_str(),
         ])
-        .unwrap_or_else(|err| {
-            log::trace!(
-                "Could not fetch remote mob branch {}: {}",
-                SESSION_HEAD,
-                err
-            );
-        });
+        .map_err(|err| Error::Missing {
+            source: err.context("Could not fetch repo"),
+        })?;
 
         let commit = self.last_commit(SESSION_HEAD);
 
         let commit = match commit {
             Some(commit) => commit,
-            None => return Err(store::Error::Missing),
+            None => {
+                return Err(store::Error::Missing {
+                    source: anyhow!("Could not find last commit"),
+                })
+            }
         };
 
         let tree = commit.tree()?;
@@ -82,14 +83,22 @@ impl<'repo> Store for GitCommand<'repo> {
 
         let tree_entry = match tree_entry {
             Some(tree) => tree,
-            None => return Err(store::Error::Missing),
+            None => {
+                return Err(store::Error::Missing {
+                    source: anyhow!("Could not find tree"),
+                })
+            }
         };
 
         let object = tree_entry.to_object(&self.repo)?;
         let blob = object.as_blob();
         let blob = match blob {
             Some(blob) => blob,
-            None => return Err(store::Error::Missing),
+            None => {
+                return Err(store::Error::Missing {
+                    source: anyhow!("No blob"),
+                })
+            }
         };
         Ok(blob.content().into())
     }

@@ -18,6 +18,7 @@ impl<'a> Next<'a> {
         command::run_hook(&self.config.hooks.before_next, me, "")?;
 
         let session = self.store.load()?;
+
         match &session.state {
             State::Stopped => {
                 log::warn!("No current mob session, run mob start");

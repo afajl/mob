@@ -38,7 +38,7 @@ impl<'a> Start<'a> {
 
         self.is_clean()?;
 
-        let session = self.store.load()?;
+        let session = self.store.load_or_default()?;
 
         match &session.state {
             State::Stopped => self.start_new(session)?,

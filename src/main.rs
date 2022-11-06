@@ -36,8 +36,19 @@ enum SubCommand {
     Done,
 }
 
-fn main() -> Result<()> {
+fn main() {
     emoji_logger::init("debug");
+    if let Err(err) = run() {
+        if log::log_enabled!(log::Level::Trace) {
+            log::error!("{err:?}");
+        } else {
+            log::error!("{err}");
+        }
+        std::process::exit(1);
+    }
+}
+
+fn run() -> Result<()> {
     let opts: Opts = Opts::parse();
 
     let config = config::load()?;

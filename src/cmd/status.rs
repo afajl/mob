@@ -27,7 +27,7 @@ impl<'a> Status<'a> {
     }
 
     pub fn run(&self) -> Result<()> {
-        let session = self.store.load()?;
+        let session = self.store.load_or_default()?;
 
         if self.opts.raw {
             println!("{:#?}", session);

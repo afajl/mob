@@ -1,15 +1,15 @@
 use super::latest::Session;
 use super::versioned_session::Versioned;
 use super::VersionedSession;
-use crate::git;
+use crate::git::{self, store};
 use crate::session::v0::SessionV0;
 
 pub type Result<T, E = Error> = core::result::Result<T, E>;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("git error: `{0}`")]
-    Git(#[from] git::store::Error),
+    #[error("Could not fetch session. Have you run start? Is the git server down?")]
+    Store(#[from] git::store::Error),
 
     #[error("unable to deserialize session `{0}`, run `mob clean`")]
     Format(#[from] serde_json::Error),
@@ -20,6 +20,7 @@ pub enum Error {
 
 pub trait Store {
     fn load(&self) -> Result<Session>;
+    fn load_or_default(&self) -> Result<Session>;
     fn save(&self, session: Session) -> Result<()>;
     fn clean(&self) -> Result<()>;
 }
@@ -53,10 +54,20 @@ impl<'a> SessionStore<'a> {
 
 impl<'a> Store for SessionStore<'a> {
     fn load(&self) -> Result<Session> {
+        self.store
+            .load()
+            .map_err(Error::Store)
+            .and_then(SessionStore::get_session)
+    }
+
+    fn load_or_default(&self) -> Result<Session> {
         match self.store.load() {
             Ok(data) => SessionStore::get_session(data),
-            Err(git::store::Error::Missing) => Ok(Session::default()),
-            Err(error) => Err(Error::Git(error)),
+            Err(store::Error::Missing { source }) => {
+                log::trace!("No session: {source:?}. Returning default");
+                Ok(Session::default())
+            }
+            Err(err) => Err(Error::from(err)),
         }
     }
 
