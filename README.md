@@ -16,7 +16,6 @@ Mob is a console tool to work in a remote mob (or pair) with git.
 <!-- vim-markdown-toc GFM -->
 
 * [Installing](#installing)
-    * [Homebrew](#homebrew)
     * [Cargo](#cargo)
     * [Manually](#manually)
 * [Usage](#usage)
@@ -32,11 +31,6 @@ Mob is a console tool to work in a remote mob (or pair) with git.
 <!-- vim-markdown-toc -->
 
 ## Installing
-
-### Homebrew
-```bash
-brew install afajl/mob/mob
-```
 
 ### Cargo
 Install [rust](https://www.rust-lang.org/tools/install) and run:

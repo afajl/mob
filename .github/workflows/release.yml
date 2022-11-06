@@ -31,12 +31,6 @@ jobs:
             target: x86_64-unknown-linux-gnu
             use-cross: false
 
-          - build: linux-arm
-            os: ubuntu-latest
-            os-name: linux
-            target: aarch64-unknown-linux-gnu
-            use-cross: true
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3.1.0
@@ -45,12 +39,6 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           target: ${{ matrix.job.target }}
-
-      - name: Install aarch64 deps
-        if: matrix.job.target == 'aarch64-unknown-linux-gnu'
-        run: |
-          sudo apt update
-          sudo apt-get install -y binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu
 
       - name: Cargo build
         run: cargo build --release --target ${{ matrix.job.target }}
@@ -86,24 +74,4 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo publish --token ${{ secrets.CARGO_API_KEY }}
 
-  homebrew:
-    name: Bump Homebrew formula
-    needs: [publish]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Extract version
-        id: extract-version
-        run: |
-          printf "::set-output name=%s::%s\n" tag-name "${GITHUB_REF#refs/tags/}"
 
-      - name: Bumb homebrew formula
-        uses: mislav/bump-homebrew-formula-action@v2.1
-        if: "!contains(github.ref, '-')"
-        with:
-          formula-name: mob
-          homebrew-tap: afajl/homebrew-mob
-          download-url: 'https://github.com/afajl/mob/releases/download/${{ steps.extract-version.outputs.tag-name }}/mob-${{ steps.extract-version.outputs.tag-name }}-macos-x86_64-apple-darwin.tar.gz'
-          commit-message: |
-            {{formulaName}} {{version}}
-        env:
-          COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
