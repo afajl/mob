@@ -86,7 +86,7 @@ fn ask_after_timer() -> Option<String> {
         .default(true)
         .interact()
         .unwrap()
-        .then(|| cmd)
+        .then_some(cmd)
 }
 
 fn after_timer_command() -> Option<String> {

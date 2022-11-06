@@ -142,6 +142,6 @@ impl<'repo> Git for GitCommand<'repo> {
     }
 
     fn dirty_files(&self) -> Result<String> {
-        self.command.run_stdout(&["status", "--short"])
+        self.command.run_stdout(["status", "--short"])
     }
 }

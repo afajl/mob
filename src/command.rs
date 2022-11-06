@@ -154,6 +154,6 @@ pub fn run_hook(hook: &Option<String>, current_driver: &str, next_driver: &str) 
     let cmd = cmd.replace(config::VAR_NEXT_DRIVER, next_driver);
 
     let sh = Command::new(os::command("sh"));
-    sh.run_checked(&["-c", cmd.as_str()])
+    sh.run_checked(["-c", cmd.as_str()])
         .map_err(|e| anyhow!("Failed to run '{}': {}", cmd, e))
 }
