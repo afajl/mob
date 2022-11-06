@@ -1,5 +1,5 @@
 
-![mob](https://github.com/afajl/mob/raw/master/assets/logo.png)
+![mob](https://github.com/afajl/mob/raw/main/assets/logo.png)
 
 Mob is a console tool to work in a remote mob (or pair) with git.
 
@@ -8,7 +8,7 @@ Mob is a console tool to work in a remote mob (or pair) with git.
 * [Keeps track of state](#how-it-works) (working, waiting for next, stopped) to eliminate risk of conflicts and lost work
 * Use any branch as base
 
-![mob screen](https://github.com/afajl/mob/raw/master/assets/screen.gif)
+![mob screen](https://github.com/afajl/mob/raw/main/assets/screen.gif)
 
 
 
@@ -16,15 +16,15 @@ Mob is a console tool to work in a remote mob (or pair) with git.
 <!-- vim-markdown-toc GFM -->
 
 * [Installing](#installing)
-    * [Homebrew](#homebrew)
-    * [Cargo](#cargo)
-    * [Manually](#manually)
+        * [Homebrew](#homebrew)
+        * [Cargo](#cargo)
+        * [Manually](#manually)
 * [Usage](#usage)
-  * [FAQ](#faq)
-    * [How do I remove all traces of `mob` from a repo?](#how-do-i-remove-all-traces-of-mob-from-a-repo)
-    * [Where is the configuration stored?](#where-is-the-configuration-stored)
-    * [How do I show current status?](#how-do-i-show-current-status)
-    * [Work duration is set to 15 but we must stop for a meeting in 7 minutes](#work-duration-is-set-to-15-but-we-must-stop-for-a-meeting-in-7-minutes)
+    * [FAQ](#faq)
+        * [How do I remove all traces of `mob` from a repo?](#how-do-i-remove-all-traces-of-mob-from-a-repo)
+        * [Where is the configuration stored?](#where-is-the-configuration-stored)
+        * [How do I show current status?](#how-do-i-show-current-status)
+        * [Work duration is set to 15 but we must stop for a meeting in 7 minutes](#work-duration-is-set-to-15-but-we-must-stop-for-a-meeting-in-7-minutes)
 * [Hooks](#hooks)
 * [How it works](#how-it-works)
 * [Inspiration and other tools](#inspiration-and-other-tools)
@@ -55,9 +55,9 @@ PATH.
 - `mob start` creates a new feature branch or syncs the branch from the
   previous driver. 
 - `mob next` commits all changes to the feature branch and hands over to the next driver.
-- `mob done` stages all changes on the feature branch for commit on the base branch (normally master).
+- `mob done` stages all changes on the feature branch for commit on the base branch (normally main).
 
-![mob graph](https://github.com/afajl/mob/raw/master/assets/graph.svg)
+![mob graph](https://github.com/afajl/mob/raw/main/assets/graph.svg)
 
 Run `mob` for help on more commands.
 
@@ -131,7 +131,7 @@ Session {
     ),
     branches: Branches {
         branch: "mob-session",
-        base_branch: "master",
+        base_branch: "main",
     },
     settings: Some(
         Settings {
@@ -147,7 +147,7 @@ Session {
 
 The session can be in 3 different states:  
 
-![mob states](https://github.com/afajl/mob/raw/master/assets/state.svg)
+![mob states](https://github.com/afajl/mob/raw/main/assets/state.svg)
 
 
 ## Inspiration and other tools
