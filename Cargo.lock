@@ -595,7 +595,7 @@ checksum = "456c603be3e8d448b072f410900c09faf164fbce2d480456f50eea6e25f9c848"
 
 [[package]]
 name = "remotemob"
-version = "1.1.2-rc.3"
+version = "1.1.2-rc.4"
 dependencies = [
  "anyhow",
  "chrono",
