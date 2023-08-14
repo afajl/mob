@@ -1,0 +1,19 @@
+{
+  "version": "v1",
+  "drivers": [
+    "Paul"
+  ],
+  "branches": {
+    "branch": "mob-session",
+    "base_branch": "main"
+  },
+  "settings": {
+    "commit_message": "mob sync [skip ci]",
+    "work_duration": 10
+  },
+  "state": {
+    "Working": {
+      "driver": "Paul"
+    }
+  }
+}
