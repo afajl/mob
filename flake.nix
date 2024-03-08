@@ -1,22 +1,64 @@
 {
   inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    naersk.url = "github:nix-community/naersk";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
+    crane = {
+      url = "github:ipetkov/crane";
+      inputs = { nixpkgs.follows = "nixpkgs"; };
+    };
   };
+  outputs = { self, nixpkgs, flake-utils, rust-overlay, crane }:
+    flake-utils.lib.eachDefaultSystem
+      (system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ (import rust-overlay) ];
+          };
+          rustToolchain = pkgs.pkgsBuildHost.rust-bin.fromRustupToolchainFile
+            ./rust-toolchain.toml;
+          craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
+          src = craneLib.cleanCargoSource ./.;
+          nativeBuildInputs = with pkgs; [ rustToolchain pkg-config ];
 
-  outputs = { self, flake-utils, naersk, nixpkgs }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = (import nixpkgs) { inherit system; };
+          buildInputs = with pkgs;
+            [ ] ++ lib.optionals stdenv.isDarwin [ libiconv ];
 
-        naersk' = pkgs.callPackage naersk { };
+          commonArgs = {
+            pname = "mob";
+            version = "0.1.0";
+            inherit src buildInputs nativeBuildInputs;
+          };
+          cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+          mob =
+            craneLib.buildPackage (commonArgs // { inherit cargoArtifacts; });
+        in
+        {
+          packages = {
+            inherit mob;
+            default = mob;
+          };
 
-      in rec {
-        defaultPackage = naersk'.buildPackage { src = ./.; };
+          devShells.default = craneLib.devShell {
+            inputsFrom = [ mob ];
+            packages = [ pkgs.hyperfine ];
 
-        devShell = pkgs.mkShell {
-          nativeBuildInputs = with pkgs; [ rustc cargo plantuml cargo-release ];
-        };
-      });
+            shellHook = ''
+              echo
+              echo "👋 Hi."
+            '';
+          };
+        }) // {
+      overlays.default = final: _: {
+        inherit (self.packages.${final.system}) frind;
+      };
+    };
 }
+

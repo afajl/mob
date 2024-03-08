@@ -1,0 +1,4 @@
+[toolchain]
+channel = "beta"
+components = ["rustfmt", "clippy", "rust-src", "rust-analyzer"]
+profile = "minimal"
