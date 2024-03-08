@@ -2,8 +2,6 @@ pub mod store;
 use crate::command;
 use crate::os;
 use anyhow::Result;
-pub use git2::BranchType;
-use git2::{Commit, Config, Error, Oid, Repository, Signature};
 use std::env;
 use std::path::PathBuf;
 pub use store::Store;
@@ -26,30 +24,14 @@ pub struct CommitFile<'a> {
 
 pub struct GitCommand<'repo> {
     command: command::Command<'repo>,
-    repo: Repository,
     pub remote: String,
 }
 
 impl<'repo> GitCommand<'repo> {
     pub fn new(path: Option<PathBuf>, remote: String) -> Result<GitCommand<'repo>> {
         let path = path.unwrap_or(env::current_dir()?);
-        let repo = Repository::open(&path)?;
         let command = command::Command::new(os::command("git")).working_directory(path.as_path());
-        Ok(Self {
-            command,
-            repo,
-            remote,
-        })
-    }
-
-    pub fn from_repo(repo: Repository) -> Self {
-        let workdir = repo.workdir().expect("Repo does not have a workdir");
-        let command = command::Command::new(os::command("git")).working_directory(workdir);
-        Self {
-            command,
-            repo,
-            remote: "origin".into(),
-        }
+        Ok(Self { command, remote })
     }
 
     fn last_commit(&self, reference: &str) -> Option<Commit> {
@@ -72,7 +54,7 @@ impl<'repo> GitCommand<'repo> {
         Signature::now(name.as_str(), email.as_str())
     }
 
-    pub fn create_commit(&self, commit: &CommitFile) -> Result<git2::Oid, Error> {
+    pub fn create_commit(&self, commit: &CommitFile) -> Result<(), anyhow::Error> {
         let oid = self.repo.blob(commit.data)?;
 
         let mut tree = self.repo.treebuilder(None)?;

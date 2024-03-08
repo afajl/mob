@@ -13,9 +13,6 @@ pub enum Error {
     #[error("unknown error")]
     Unknown(#[from] anyhow::Error),
 
-    #[error("repository operation failed: `{0}`")]
-    Repo(#[from] git2::Error),
-
     #[error("failed to push to origin")]
     Conflict,
 
@@ -31,10 +28,8 @@ pub trait Store {
 
 impl<'repo> Store for GitCommand<'repo> {
     fn save(&self, data: &[u8]) -> Result<(), store::Error> {
-        let filename = SESSION_FILENAME;
-
         let commit = CommitFile {
-            filename,
+            filename: SESSION_FILENAME,
             data,
             reference: SESSION_HEAD,
             message: COMMIT_MESSAGE,
