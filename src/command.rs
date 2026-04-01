@@ -1,6 +1,6 @@
-use anyhow::anyhow;
 use anyhow::Error;
 use anyhow::Result;
+use anyhow::anyhow;
 use std::borrow::Cow;
 use std::ffi::OsStr;
 use std::fmt;
@@ -140,6 +140,42 @@ impl<'name> Command<'name> {
         };
 
         Ok(output)
+    }
+
+    /// Run the given command with data piped to stdin, return stdout as string.
+    pub fn run_with_stdin<S>(
+        &self,
+        args: impl IntoIterator<Item = S>,
+        stdin_data: &[u8],
+    ) -> Result<String, Error>
+    where
+        S: AsRef<OsStr>,
+    {
+        use std::io::Write;
+
+        let mut cmd = self.command(args);
+        cmd.stdin(process::Stdio::piped());
+        cmd.stdout(process::Stdio::piped());
+        cmd.stderr(process::Stdio::piped());
+
+        let mut child = cmd.spawn()?;
+
+        if let Some(mut stdin) = child.stdin.take() {
+            stdin.write_all(stdin_data)?;
+        }
+
+        let output = child.wait_with_output()?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(anyhow!(
+                "Command failed with status {}: {}",
+                output.status,
+                stderr
+            ));
+        }
+
+        String::from_utf8(output.stdout).map_err(|_| anyhow!("Cannot decode stdout as utf-8"))
     }
 }
 

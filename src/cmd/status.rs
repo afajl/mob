@@ -61,7 +61,7 @@ impl<'a> Status<'a> {
             State::WaitingForNext { next } => {
                 let next = match next {
                     Some(driver) if driver == &me => "You",
-                    Some(ref driver) => driver,
+                    Some(driver) => driver,
                     None => "Anyone",
                 };
 

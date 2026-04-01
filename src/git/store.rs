@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 
-use super::{store, CommitFile, GitCommand, Result};
+use super::{CommitFile, GitCommand, Result, store};
 
 const SESSION_FILENAME: &str = "data";
 const SESSION_HEAD: &str = "mob-meta";
@@ -8,13 +8,8 @@ const COMMIT_MESSAGE: &str = "mob metadata changed [skip ci]";
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    // #[error("unable to deserialize data `{0}`")]
-    // Format(#[from] serde_json::Error),
     #[error("unknown error")]
     Unknown(#[from] anyhow::Error),
-
-    #[error("repository operation failed: `{0}`")]
-    Repo(#[from] git2::Error),
 
     #[error("failed to push to origin")]
     Conflict,
@@ -29,7 +24,7 @@ pub trait Store {
     fn clean(&self) -> Result<(), Error>;
 }
 
-impl<'repo> Store for GitCommand<'repo> {
+impl Store for GitCommand {
     fn save(&self, data: &[u8]) -> Result<(), store::Error> {
         let filename = SESSION_FILENAME;
 
@@ -52,10 +47,9 @@ impl<'repo> Store for GitCommand<'repo> {
     }
 
     fn load(&self) -> Result<Vec<u8>, store::Error> {
-        self.run_quietly(&["branch", "-D", SESSION_HEAD])
-            .map_err(|err| Error::Missing {
-                source: err.context("Could not delete local meta branch: {SESSION_HEAD}"),
-            })?;
+        if let Err(e) = self.run_quietly(&["branch", "-D", SESSION_HEAD]) {
+            log::trace!("Failed to delete or missing local branch: {}", e);
+        }
 
         self.run_quietly(&[
             "fetch",
@@ -66,41 +60,11 @@ impl<'repo> Store for GitCommand<'repo> {
             source: err.context("Could not fetch repo"),
         })?;
 
-        let commit = self.last_commit(SESSION_HEAD);
-
-        let commit = match commit {
-            Some(commit) => commit,
-            None => {
-                return Err(store::Error::Missing {
-                    source: anyhow!("Could not find last commit"),
-                })
-            }
-        };
-
-        let tree = commit.tree()?;
-
-        let tree_entry = tree.get_name(SESSION_FILENAME);
-
-        let tree_entry = match tree_entry {
-            Some(tree) => tree,
-            None => {
-                return Err(store::Error::Missing {
-                    source: anyhow!("Could not find tree"),
-                })
-            }
-        };
-
-        let object = tree_entry.to_object(&self.repo)?;
-        let blob = object.as_blob();
-        let blob = match blob {
-            Some(blob) => blob,
-            None => {
-                return Err(store::Error::Missing {
-                    source: anyhow!("No blob"),
-                })
-            }
-        };
-        Ok(blob.content().into())
+        // Use git show to read the file content from the branch
+        self.show_file(SESSION_HEAD, SESSION_FILENAME)
+            .map_err(|err| Error::Missing {
+                source: anyhow!("Could not read session data: {}", err),
+            })
     }
 
     fn clean(&self) -> Result<(), store::Error> {

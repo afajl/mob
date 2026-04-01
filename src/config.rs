@@ -53,7 +53,7 @@ impl Config {
 
         let name = Input::new()
             .with_prompt("Your name")
-            .default(whoami::realname())
+            .default(whoami::realname().unwrap_or_default())
             .interact()?;
 
         let remote = Input::new()

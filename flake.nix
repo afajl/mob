@@ -48,7 +48,7 @@
 
           devShells.default = craneLib.devShell {
             inputsFrom = [ mob ];
-            packages = [ pkgs.hyperfine ];
+            packages = [ pkgs.hyperfine pkgs.expect ];
 
             shellHook = ''
               echo

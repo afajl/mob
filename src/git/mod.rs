@@ -1,9 +1,7 @@
 pub mod store;
 use crate::command;
 use crate::os;
-use anyhow::Result;
-pub use git2::BranchType;
-use git2::{Commit, Config, Error, Oid, Repository, Signature};
+use anyhow::{anyhow, Result};
 use std::env;
 use std::path::PathBuf;
 pub use store::Store;
@@ -24,94 +22,84 @@ pub struct CommitFile<'a> {
     pub reference: &'a str,
 }
 
-pub struct GitCommand<'repo> {
-    command: command::Command<'repo>,
-    repo: Repository,
+pub struct GitCommand {
+    command: command::Command<'static>,
     pub remote: String,
 }
 
-impl<'repo> GitCommand<'repo> {
-    pub fn new(path: Option<PathBuf>, remote: String) -> Result<GitCommand<'repo>> {
+impl GitCommand {
+    pub fn new(path: Option<PathBuf>, remote: String) -> Result<GitCommand> {
         let path = path.unwrap_or(env::current_dir()?);
-        let repo = Repository::open(&path)?;
+
+        // Verify we're in a git repository by checking for .git directory
         let command = command::Command::new(os::command("git")).working_directory(path.as_path());
-        Ok(Self {
-            command,
-            repo,
-            remote,
-        })
+        command
+            .run_stdout(["rev-parse", "--git-dir"])
+            .map_err(|_| anyhow!("Not a git repository: {}", path.display()))?;
+
+        Ok(Self { command, remote })
     }
 
-    pub fn from_repo(repo: Repository) -> Self {
-        let workdir = repo.workdir().expect("Repo does not have a workdir");
-        let command = command::Command::new(os::command("git")).working_directory(workdir);
-        Self {
-            command,
-            repo,
-            remote: "origin".into(),
-        }
-    }
-
-    fn last_commit(&self, reference: &str) -> Option<Commit> {
+    fn last_commit_oid(&self, reference: &str) -> Option<String> {
         let absolute_ref = format!("refs/heads/{}", reference);
 
-        self.repo
-            .find_reference(absolute_ref.as_str())
-            .and_then(|reference| reference.resolve())
-            .and_then(|reference| {
-                self.repo
-                    .find_commit(reference.target().unwrap_or_else(Oid::zero))
-            })
+        self.command
+            .run_stdout(["rev-parse", "--verify", "--quiet", &absolute_ref])
             .ok()
+            .map(|s| s.trim().to_string())
     }
 
-    fn get_signature() -> Result<Signature<'static>, Error> {
-        let config = Config::open_default()?;
-        let name = config.get_string("user.name")?;
-        let email = config.get_string("user.email")?;
-        Signature::now(name.as_str(), email.as_str())
-    }
+    pub fn create_commit(&self, commit: &CommitFile) -> Result<String> {
+        // 1. Create blob from data using git hash-object
+        let blob_oid = self
+            .command
+            .run_with_stdin(["hash-object", "-w", "--stdin"], commit.data)?;
+        let blob_oid = blob_oid.trim();
 
-    pub fn create_commit(&self, commit: &CommitFile) -> Result<git2::Oid, Error> {
-        let oid = self.repo.blob(commit.data)?;
+        // 2. Create tree using git mktree
+        // Format: <mode> <type> <hash>\t<filename>
+        let tree_entry = format!("100644 blob {}\t{}\n", blob_oid, commit.filename);
+        let tree_oid = self
+            .command
+            .run_with_stdin(["mktree"], tree_entry.as_bytes())?;
+        let tree_oid = tree_oid.trim();
 
-        let mut tree = self.repo.treebuilder(None)?;
-        tree.insert(commit.filename, oid, 0o100_644)?;
-        let tree = tree.write()?;
-        let tree = self.repo.find_tree(tree)?;
-
-        let parent = self.last_commit(commit.reference);
-        let parent = match parent {
-            Some(ref commit) => vec![commit],
-            None => vec![],
+        // 3. Create commit using git commit-tree
+        let parent = self.last_commit_oid(commit.reference);
+        let commit_oid = match parent {
+            Some(parent_oid) => self.command.run_with_stdin(
+                ["commit-tree", tree_oid, "-p", &parent_oid, "-m", commit.message],
+                &[],
+            )?,
+            None => self.command.run_with_stdin(
+                ["commit-tree", tree_oid, "-m", commit.message],
+                &[],
+            )?,
         };
+        let commit_oid = commit_oid.trim().to_string();
 
-        let signature = GitCommand::get_signature()?;
-
+        // 4. Update the reference to point to the new commit
         let absolute_ref = format!("refs/heads/{}", commit.reference);
-        self.repo.commit(
-            Some(absolute_ref.as_str()),
-            &signature,
-            &signature,
-            commit.message,
-            &tree,
-            parent.as_slice(),
-        )
+        self.command
+            .run_checked(["update-ref", &absolute_ref, &commit_oid])?;
+
+        Ok(commit_oid)
     }
 
-    fn find_branch(&self, name: &str) -> Result<Option<git2::Branch>> {
-        let branches = self.repo.branches(None)?;
+    pub fn show_file(&self, reference: &str, filename: &str) -> Result<Vec<u8>> {
+        let spec = format!("{}:{}", reference, filename);
+        let output = self.command.run(["show", &spec])?;
 
-        for branch_result in branches {
-            let branch = branch_result?.0;
-
-            if let Ok(Some(branch_name)) = branch.name() {
-                if branch_name == name {
-                    return Ok(Some(branch));
-                }
-            }
+        if !output.status.success() {
+            return Err(anyhow!(
+                "Failed to read {}:{}: {}",
+                reference,
+                filename,
+                output.stderr
+            ));
         }
-        Ok(None)
+
+        Ok(output.stdout.into_bytes())
     }
 
     fn run_quietly(&self, args: &[&str]) -> Result<()> {
@@ -120,7 +108,7 @@ impl<'repo> GitCommand<'repo> {
     }
 }
 
-impl<'repo> Git for GitCommand<'repo> {
+impl Git for GitCommand {
     fn run(&self, args: &[&str]) -> Result<()> {
         log::debug!("git {}", args.join(" "));
         self.command.run_checked(args)
@@ -131,14 +119,27 @@ impl<'repo> Git for GitCommand<'repo> {
     }
 
     fn has_branch(&self, branch: &str) -> Result<bool> {
-        match self.find_branch(branch)? {
-            Some(_) => Ok(true),
-            None => Ok(false),
-        }
+        let absolute_ref = format!("refs/heads/{}", branch);
+        let output = self
+            .command
+            .run(["rev-parse", "--verify", "--quiet", &absolute_ref])?;
+        Ok(output.status.success())
     }
 
     fn current_branch(&self) -> Result<Option<String>> {
-        return Ok(self.repo.head()?.shorthand().map(String::from));
+        let output = self.command.run(["rev-parse", "--abbrev-ref", "HEAD"])?;
+
+        if !output.status.success() {
+            return Ok(None);
+        }
+
+        let branch = output.stdout.trim();
+        if branch == "HEAD" {
+            // Detached HEAD state
+            Ok(None)
+        } else {
+            Ok(Some(branch.to_string()))
+        }
     }
 
     fn dirty_files(&self) -> Result<String> {

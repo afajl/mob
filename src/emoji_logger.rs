@@ -1,9 +1,6 @@
 extern crate log;
-use env_logger::{
-    self,
-    fmt::{Color, Style},
-    Env,
-};
+use console::{Emoji, style};
+use env_logger::Env;
 use log::Level;
 
 pub fn init(level: &str) {
@@ -12,36 +9,39 @@ pub fn init(level: &str) {
     builder.format(|f, record| {
         use std::io::Write;
 
-        let mut style = f.style();
-        let emoji = level_style(&mut style, record.level());
-
-        writeln!(f, " {}  {}", emoji, style.value(record.args()))
+        match record.level() {
+            Level::Trace => writeln!(
+                f,
+                " {} {}",
+                Emoji("🔍", "TRACE"),
+                style(record.args()).magenta()
+            ),
+            Level::Debug => writeln!(
+                f,
+                " {} {}",
+                Emoji("›", "DEBUG"),
+                style(record.args()).blue()
+            ),
+            Level::Info => writeln!(
+                f,
+                " {} {}",
+                Emoji(">", "INFO"),
+                style(record.args()).green()
+            ),
+            Level::Warn => writeln!(
+                f,
+                " {} {}",
+                Emoji("⚠️", "WARN"),
+                style(record.args()).yellow()
+            ),
+            Level::Error => writeln!(
+                f,
+                " {} {}",
+                Emoji("⚡", "ERROR"),
+                style(record.args()).red()
+            ),
+        }
     });
 
     builder.init();
-}
-
-fn level_style(style: &mut Style, level: Level) -> &'static str {
-    match level {
-        Level::Trace => {
-            style.set_color(Color::Magenta);
-            "🔍"
-        }
-        Level::Debug => {
-            style.set_color(Color::Blue);
-            "›"
-        }
-        Level::Info => {
-            style.set_color(Color::Green);
-            ">"
-        }
-        Level::Warn => {
-            style.set_color(Color::Yellow);
-            "⚠️"
-        }
-        Level::Error => {
-            style.set_color(Color::Red);
-            "⚡"
-        }
-    }
 }
