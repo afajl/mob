@@ -1,5 +1,5 @@
-use crate::{command, config::Config, git, session, timer};
-use anyhow::{anyhow, Result};
+use crate::{command, config::Config, git, prompt::Prompter, session, timer};
+use anyhow::{Result, anyhow};
 use clap::Parser;
 use session::State;
 
@@ -7,12 +7,13 @@ use session::State;
 pub struct StartOpts {
     /// How long you want this work session to last
     #[clap(name = "MINUTES")]
-    minutes: Option<i64>,
+    pub minutes: Option<i64>,
 }
 
 pub struct Start<'a> {
     git: &'a dyn git::Git,
     store: &'a dyn session::Store,
+    prompter: &'a dyn Prompter,
     opts: StartOpts,
     config: Config,
 }
@@ -21,12 +22,14 @@ impl<'a> Start<'a> {
     pub fn new(
         git: &'a impl git::Git,
         store: &'a impl session::Store,
+        prompter: &'a impl Prompter,
         opts: StartOpts,
         config: Config,
     ) -> Start<'a> {
         Self {
             git,
             store,
+            prompter,
             opts,
             config,
         }
@@ -48,11 +51,9 @@ impl<'a> Start<'a> {
             State::Working { driver } => {
                 log::warn!("{} has not run mob next", driver);
                 let selections = &["Retry", "Take turn with the risk of losing work"];
-                let selection = dialoguer::Select::new()
-                    .with_prompt("What do you want to do?")
-                    .default(0)
-                    .items(&selections[..])
-                    .interact()?;
+                let selection =
+                    self.prompter
+                        .select_with_prompt("What do you want to do?", selections, 0)?;
 
                 match selection {
                     0 => return self.run(),
@@ -83,15 +84,17 @@ impl<'a> Start<'a> {
 
         log::warn!("Working tree is dirty:\n{}", status);
 
-        let selection = dialoguer::Select::new()
-            .default(0)
-            .items(&["Quit", "Stash changes", "Discard changes"])
-            .interact()?;
+        let selection = self
+            .prompter
+            .select(&["Quit", "Stash changes", "Discard changes"], 0)?;
 
         match selection {
             0 => Err(anyhow!("Working tree is not clean")),
-            1 => self.git.run(&["stash"]),
-            2 => self.git.run(&["reset", "HEAD", "--hard"]),
+            1 => self.git.run(&["stash", "--include-untracked"]),
+            2 => self
+                .git
+                .run(&["reset", "HEAD", "--hard"])
+                .and_then(|_| self.git.run(&["clean", "-fdx"])),
             _ => unreachable!("could not come here"),
         }
     }
@@ -99,11 +102,11 @@ impl<'a> Start<'a> {
     fn take_over(&self, from: &str, session: session::Session) -> Result<()> {
         let take_and_remove = format!("Take turn and remove {} from the mob", from);
         let selections = &["Take turn", take_and_remove.as_str(), "Abort"];
-        let selection = dialoguer::Select::new()
-            .with_prompt(format!("It's {}s turn. What do you want to do?", from).as_str())
-            .default(0)
-            .items(&selections[..])
-            .interact()?;
+        let selection = self.prompter.select_with_prompt(
+            &format!("It's {}s turn. What do you want to do?", from),
+            selections,
+            0,
+        )?;
 
         match selection {
             0 => self.start(session),
@@ -158,7 +161,7 @@ impl<'a> Start<'a> {
 
         let settings = match session.settings {
             Some(settings) => settings,
-            None => session::Settings::ask()?,
+            None => session::Settings::ask(self.prompter)?,
         };
 
         let default_branches = session::Branches {
@@ -170,20 +173,26 @@ impl<'a> Start<'a> {
             ..session.branches
         };
 
-        let branches = session::Branches::ask(default_branches)?;
+        let branches = session::Branches::ask(self.prompter, default_branches)?;
 
         let remote_branches = branches.with_remote(&self.config.remote);
 
         self.git.run(&["fetch", "--all", "--prune"])?;
 
-        if !self.git.has_branch(remote_branches.base_branch.as_str())? {
+        println!(
+            "Git status: {:?}, {}",
+            self.git.current_branch()?,
+            remote_branches.base_branch
+        );
+
+        if !self.git.has_branch(&remote_branches.base_branch)? {
             return Err(anyhow!(
                 "You need to push your branch `{}` first",
                 branches.base_branch
             ));
         }
 
-        self.git.run(&["checkout", branches.base_branch.as_str()])?;
+        self.git.run(&["checkout", &branches.base_branch])?;
         self.git
             .run(&["merge", remote_branches.base_branch.as_str(), "--ff-only"])?;
 
@@ -235,11 +244,7 @@ impl<'a> Start<'a> {
                     "Remove local branch and checkout remote",
                     "Delete local and remote branch and start fresh",
                 ];
-                let selection = dialoguer::Select::new()
-                    .with_prompt(prompt)
-                    .default(0)
-                    .items(&selections[..])
-                    .interact()?;
+                let selection = self.prompter.select_with_prompt(&prompt, selections, 0)?;
 
                 match selection {
                     0 => {
@@ -270,11 +275,7 @@ impl<'a> Start<'a> {
                     branches.branch
                 );
                 let selections = &["Push local branch", "Delete local branch and start fresh"];
-                let selection = dialoguer::Select::new()
-                    .with_prompt(prompt)
-                    .default(0)
-                    .items(&selections[..])
-                    .interact()?;
+                let selection = self.prompter.select_with_prompt(&prompt, selections, 0)?;
 
                 if selection == 0 {
                     self.git.run(&[
@@ -297,11 +298,7 @@ impl<'a> Start<'a> {
                     "Checkout remote branch",
                     "Delete remote branch and start fresh",
                 ];
-                let selection = dialoguer::Select::new()
-                    .with_prompt(prompt)
-                    .default(0)
-                    .items(&selections[..])
-                    .interact()?;
+                let selection = self.prompter.select_with_prompt(&prompt, selections, 0)?;
 
                 match selection {
                     0 => {

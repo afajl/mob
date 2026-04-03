@@ -1,5 +1,5 @@
+use crate::prompt::Prompter;
 use anyhow::Result;
-use dialoguer::Input;
 use serde::{Deserialize, Serialize};
 
 type DurationMinutes = i64;
@@ -20,18 +20,14 @@ impl Default for Settings {
 }
 
 impl Settings {
-    pub fn ask() -> Result<Self> {
+    pub fn ask(prompter: &dyn Prompter) -> Result<Self> {
         let default = Settings::default();
 
-        let commit_message = Input::new()
-            .with_prompt("Commit message")
-            .default(default.commit_message)
-            .interact()?;
+        let commit_message =
+            prompter.input_string("Commit message", &default.commit_message)?;
 
-        let work_duration = Input::new()
-            .with_prompt("Work duration")
-            .default(default.work_duration)
-            .interact()?;
+        let work_duration =
+            prompter.input_i64("Work duration", default.work_duration)?;
 
         let config = Self {
             commit_message,

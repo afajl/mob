@@ -1,16 +1,27 @@
-use crate::{command, config::Config, git, session};
+use crate::{command, config::Config, git, prompt::Prompter, session};
 use anyhow::Result;
 use session::State;
 
 pub struct Done<'a> {
     git: &'a dyn git::Git,
     store: &'a dyn session::Store,
+    prompter: &'a dyn Prompter,
     config: Config,
 }
 
 impl<'a> Done<'a> {
-    pub fn new(git: &'a impl git::Git, store: &'a impl session::Store, config: Config) -> Done<'a> {
-        Self { git, store, config }
+    pub fn new(
+        git: &'a impl git::Git,
+        store: &'a impl session::Store,
+        prompter: &'a impl Prompter,
+        config: Config,
+    ) -> Done<'a> {
+        Self {
+            git,
+            store,
+            prompter,
+            config,
+        }
     }
 
     pub fn run(&self) -> Result<()> {
@@ -25,10 +36,9 @@ impl<'a> Done<'a> {
             State::Working { driver } if driver == me.as_str() => self.done(session)?,
             State::Working { driver } => {
                 log::warn!("{} is currently working", driver);
-                let take_over = dialoguer::Confirm::new()
-                    .with_prompt("Merge anyway with risk of loosing work?")
-                    .default(false)
-                    .interact()?;
+                let take_over = self
+                    .prompter
+                    .confirm("Merge anyway with risk of loosing work?", false)?;
 
                 if take_over {
                     self.done(session)?;

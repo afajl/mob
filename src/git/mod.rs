@@ -1,7 +1,7 @@
 pub mod store;
 use crate::command;
 use crate::os;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use std::env;
 use std::path::PathBuf;
 pub use store::Store;
@@ -68,13 +68,19 @@ impl GitCommand {
         let parent = self.last_commit_oid(commit.reference);
         let commit_oid = match parent {
             Some(parent_oid) => self.command.run_with_stdin(
-                ["commit-tree", tree_oid, "-p", &parent_oid, "-m", commit.message],
+                [
+                    "commit-tree",
+                    tree_oid,
+                    "-p",
+                    &parent_oid,
+                    "-m",
+                    commit.message,
+                ],
                 &[],
             )?,
-            None => self.command.run_with_stdin(
-                ["commit-tree", tree_oid, "-m", commit.message],
-                &[],
-            )?,
+            None => self
+                .command
+                .run_with_stdin(["commit-tree", tree_oid, "-m", commit.message], &[])?,
         };
         let commit_oid = commit_oid.trim().to_string();
 
@@ -110,7 +116,6 @@ impl GitCommand {
 
 impl Git for GitCommand {
     fn run(&self, args: &[&str]) -> Result<()> {
-        log::debug!("git {}", args.join(" "));
         self.command.run_checked(args)
     }
 
@@ -119,10 +124,9 @@ impl Git for GitCommand {
     }
 
     fn has_branch(&self, branch: &str) -> Result<bool> {
-        let absolute_ref = format!("refs/heads/{}", branch);
         let output = self
             .command
-            .run(["rev-parse", "--verify", "--quiet", &absolute_ref])?;
+            .run(["rev-parse", "--verify", "--quiet", branch])?;
         Ok(output.status.success())
     }
 

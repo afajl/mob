@@ -5,5 +5,6 @@ pub mod duration;
 pub mod emoji_logger;
 pub mod git;
 mod os;
+pub mod prompt;
 pub mod session;
 pub mod timer;

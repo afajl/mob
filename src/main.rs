@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
-use remotemob::{cmd, config, emoji_logger, git, session, session::Store};
+use remotemob::{cmd, config, emoji_logger, git, prompt::DialoguerPrompter, session, session::Store};
 
 #[derive(Parser)]
 #[clap(version = clap::crate_version!(), author = clap::crate_authors!())]
@@ -55,14 +55,15 @@ fn run() -> Result<()> {
 
     let git = git::GitCommand::new(None, config.remote.clone())?;
     let store = session::SessionStore::new(&git);
+    let prompter = DialoguerPrompter;
 
     match opts.subcmd {
-        SubCommand::Start(opts) => cmd::Start::new(&git, &store, opts, config).run()?,
+        SubCommand::Start(opts) => cmd::Start::new(&git, &store, &prompter, opts, config).run()?,
         SubCommand::Next => cmd::Next::new(&git, &store, config).run()?,
-        SubCommand::Done => cmd::Done::new(&git, &store, config).run()?,
+        SubCommand::Done => cmd::Done::new(&git, &store, &prompter, config).run()?,
         SubCommand::Clean => store.clean()?,
         SubCommand::Status(opts) => cmd::Status::new(opts, &store, config).run()?,
-        SubCommand::Order => cmd::Order::new(&store).run()?,
+        SubCommand::Order => cmd::Order::new(&store, &prompter).run()?,
     };
     Ok(())
 }

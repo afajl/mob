@@ -1,6 +1,5 @@
+use crate::prompt::Prompter;
 use anyhow::Result;
-use dialoguer::Input;
-
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16,20 +15,14 @@ impl Branches {
             base_branch: format!("{}/{}", remote, self.base_branch),
         }
     }
-    pub fn ask(default: Branches) -> Result<Branches> {
+    pub fn ask(prompter: &dyn Prompter, default: Branches) -> Result<Branches> {
         if default.base_branch != "master" && default.base_branch != "main" {
             log::info!("Note that you are not on main or master");
         }
 
-        let base_branch = Input::new()
-            .with_prompt("Base branch")
-            .default(default.base_branch)
-            .interact()?;
+        let base_branch = prompter.input_string("Base branch", &default.base_branch)?;
 
-        let branch = Input::new()
-            .with_prompt("Feature branch")
-            .default(default.branch)
-            .interact()?;
+        let branch = prompter.input_string("Feature branch", &default.branch)?;
 
         Ok(Branches {
             branch,

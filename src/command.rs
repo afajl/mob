@@ -13,6 +13,7 @@ use crate::config;
 use crate::os;
 
 /// The decoded output after running a command.
+#[derive(Debug)]
 pub struct Output {
     pub status: process::ExitStatus,
     pub stdout: String,
@@ -127,6 +128,7 @@ impl<'name> Command<'name> {
         S: AsRef<OsStr>,
     {
         let mut cmd = self.command(args);
+        log::trace!("running: {:?}", &cmd);
         let output = cmd.output()?;
 
         let output = Output {
@@ -138,6 +140,7 @@ impl<'name> Command<'name> {
                 io::Error::new(io::ErrorKind::Other, "Cannot decode stderr as utf-8")
             })?,
         };
+        log::trace!("output: {:?}", &output);
 
         Ok(output)
     }
