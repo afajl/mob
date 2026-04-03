@@ -87,12 +87,11 @@ impl TestRepos {
         let names = ["alice", "bob", "carol"];
         let mut clones = Vec::new();
 
-        for i in 0..num_clones {
-            let name = names[i];
+        for name in names.iter().take(num_clones) {
             let clone_path = base_path.join(format!("clone_{}", name));
 
             run_git(
-                &base_path,
+                base_path,
                 &[
                     "clone",
                     origin.to_str().unwrap(),
@@ -102,7 +101,7 @@ impl TestRepos {
 
             for (key, value) in [
                 ("user.name", name),
-                ("user.email", &format!("{}@test.local", name)),
+                ("user.email", &format!("{}@test.local", name).as_str()),
             ] {
                 run_git(&clone_path, &["config", key, value]);
             }
