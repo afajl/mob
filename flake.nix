@@ -48,7 +48,6 @@
 
           devShells.default = craneLib.devShell {
             inputsFrom = [ mob ];
-            packages = [ pkgs.hyperfine pkgs.expect ];
 
             shellHook = ''
               echo
@@ -57,7 +56,7 @@
           };
         }) // {
       overlays.default = final: _: {
-        inherit (self.packages.${final.system}) frind;
+        inherit (self.packages.${final.system}) mob;
       };
     };
 }
