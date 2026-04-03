@@ -73,10 +73,7 @@ impl Config {
 }
 
 fn ask_after_timer() -> Option<String> {
-    let cmd = match after_timer_command() {
-        Some(cmd) => cmd,
-        None => return None,
-    };
+    let cmd = after_timer_command()?;
 
     log::info!("Command to run when your turn is done:");
     log::info!("  {}", &cmd);
