@@ -1,6 +1,8 @@
 use anyhow::Result;
 use clap::Parser;
-use remotemob::{cmd, config, emoji_logger, git, prompt::DialoguerPrompter, session, session::Store};
+use remotemob::{
+    cmd, config, emoji_logger, git, prompt::DialoguerPrompter, session, session::Store,
+};
 
 #[derive(Parser)]
 #[clap(version = clap::crate_version!(), author = clap::crate_authors!())]

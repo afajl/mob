@@ -63,9 +63,11 @@ impl<'a> Order<'a> {
                 } else {
                     let ordered = ordered_drivers.all();
                     let ordered_strs: Vec<&str> = ordered.iter().map(|s| s.as_str()).collect();
-                    let next = self
-                        .prompter
-                        .select_with_prompt("Who should be next?", &ordered_strs, 0)?;
+                    let next = self.prompter.select_with_prompt(
+                        "Who should be next?",
+                        &ordered_strs,
+                        0,
+                    )?;
 
                     Some(ordered[next].clone())
                 };

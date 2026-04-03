@@ -23,11 +23,9 @@ impl Settings {
     pub fn ask(prompter: &dyn Prompter) -> Result<Self> {
         let default = Settings::default();
 
-        let commit_message =
-            prompter.input_string("Commit message", &default.commit_message)?;
+        let commit_message = prompter.input_string("Commit message", &default.commit_message)?;
 
-        let work_duration =
-            prompter.input_i64("Work duration", default.work_duration)?;
+        let work_duration = prompter.input_i64("Work duration", default.work_duration)?;
 
         let config = Self {
             commit_message,

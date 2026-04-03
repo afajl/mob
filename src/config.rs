@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use confy;
 use dialoguer::{Confirm, Input};
 use directories::UserDirs;

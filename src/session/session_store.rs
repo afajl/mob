@@ -1,6 +1,6 @@
+use super::VersionedSession;
 use super::latest::Session;
 use super::versioned_session::Versioned;
-use super::VersionedSession;
 use crate::git::{self, store};
 use crate::session::v0::SessionV0;
 
