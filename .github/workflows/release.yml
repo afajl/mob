@@ -16,12 +16,6 @@ jobs:
           - build: macos
             os: macos-latest
             os-name: macos
-            target: x86_64-apple-darwin
-            use-cross: false
-
-          - build: macos m1
-            os: macos-latest
-            os-name: macos
             target: aarch64-apple-darwin
             use-cross: true
 
