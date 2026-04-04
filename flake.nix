@@ -20,7 +20,7 @@
           nativeBuildInputs = with pkgs; [ rustToolchain pkg-config ];
 
           buildInputs = with pkgs;
-            [ ] ++ lib.optionals stdenv.isDarwin [ libiconv ];
+            [ git ] ++ lib.optionals stdenv.isDarwin [ libiconv ];
 
           commonArgs = {
             pname = "mob";
